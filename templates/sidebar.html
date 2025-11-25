@@ -1,0 +1,100 @@
+<aside class="sidebar d-flex flex-column bg-white">
+  <nav class="sidebar-nav flex-grow-1 mt-3">
+    <a href="{% url 'core:dashboard' %}"
+      class="nav-item nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <i class="fas fa-th-large fa-fw"></i>
+      <span class="nav-text">Dashboard</span>
+    </a>
+    {% if module_access.helpdesk %}
+      <a href="{% url 'helpdesk:ticket_list' %}"
+        class="nav-item nav-link {% if 'helpdesk' in request.path %}active{% endif %}">
+        <i class="fas fa-headset fa-fw"></i>
+        <span class="nav-text">Help Desk</span>
+      </a>
+    {% endif %}
+    <a href="{% url 'projects:project_list' %}"
+      class="nav-item nav-link {% if request.resolver_match.url_name in 'project_list project_detail project_update project_kanban project_risks project_hours project_tasks project_create project_delete' %}active{% endif %}">
+      <i class="fas fa-hourglass-half fa-fw"></i>
+      <span class="nav-text">Projetos</span>
+    </a>
+    <a href="{% url 'projects:task_list_assigned' %}"
+      class="nav-item nav-link {% if request.resolver_match.url_name == 'task_list_assigned' %}active{% endif %}">
+      <i class="fas fa-tasks fa-fw"></i>
+      <span class="nav-text">Tarefas</span>
+    </a>
+    <a href="{% url 'timesheet:timesheet_list' %}"
+      class="nav-item nav-link {% if request.resolver_match.url_name == 'timesheet_list' %}active{% endif %}">
+      <i class="fas fa-calendar-week fa-fw"></i>
+      <span class="nav-text">Folha de Ponto</span>
+    </a>
+    {% if module_access.reports %}
+      <a href="{% url 'timesheet:reports_dashboard' %}"
+        class="nav-item nav-link {% if request.resolver_match.url_name == 'reports_dashboard' %}active{% endif %}">
+        <i class="fas fa-chart-pie fa-fw"></i>
+        <span class="nav-text">Relatórios</span>
+      </a>
+    {% endif %}
+    {% if module_access.approvals %}
+      <a href="{% url 'timesheet:timesheet_approval_list' %}"
+        class="nav-item nav-link {% if request.resolver_match.url_name == 'timesheet_approval_list' %}active{% endif %}">
+        <i class="fas fa-check-double fa-fw"></i>
+        <span class="nav-text">Minhas Aprovações</span>
+      </a>
+    {% endif %}
+    {% if module_access.approvals_he %}
+    <a href="{% url 'timesheet:timesheet_approval_list' %}"
+      class="nav-item nav-link">
+      <i class="fas fa-user-tie fa-fw"></i>
+      <span class="nav-text">Aprovação HE</span>
+    </a>
+    {% endif %}
+    {% if user.is_staff and module_access.admin %}
+    <div class="my-2 border-top mx-3"></div>
+    <a href="{% url 'admin:index' %}" target="_blank" class="nav-item nav-link text-dark">
+      <i class="fas fa-cogs fa-fw"></i>
+      <span class="nav-text">Administração</span>
+    </a>
+    {% endif %}
+  </nav>
+  <div class="sidebar-footer">
+    <button id="sidebarToggle" class="btn-toggle" aria-label="Toggle sidebar">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+  </div>
+</aside>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const icon = toggleBtn.querySelector('i');
+
+    // Check local storage
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed) {
+      sidebar.classList.add('collapsed');
+      document.body.classList.add('sidebar-collapsed');
+      icon.classList.remove('fa-chevron-left');
+      icon.classList.add('fa-chevron-right');
+    } else {
+      icon.classList.add('fa-chevron-left');
+    }
+
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+      document.body.classList.toggle('sidebar-collapsed');
+      const collapsed = sidebar.classList.contains('collapsed');
+
+      // Save state
+      localStorage.setItem('sidebarCollapsed', collapsed);
+
+      if (collapsed) {
+        icon.classList.remove('fa-chevron-left');
+        icon.classList.add('fa-chevron-right');
+      } else {
+        icon.classList.remove('fa-chevron-right');
+        icon.classList.add('fa-chevron-left');
+      }
+    });
+  });
+</script>

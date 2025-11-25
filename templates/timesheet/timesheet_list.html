@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Folhas de Ponto{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="mb-0">Folhas de Ponto</h4>
+    <p class="text-muted small mb-0">Visualize e gerencie suas folhas semanais.</p>
+  </div>
+  <a href="{% url 'timesheet:timesheet_create' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-2"></i> Nova folha
+  </a>
+</div>
+
+{% if grouped_timesheets %}
+  {% for group in grouped_timesheets %}
+  <div class="card mb-3 shadow-sm border-0">
+    <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+      <h5 class="fw-bold text-primary mb-0">{{ group.month_year }}</h5>
+    </div>
+    <div class="list-group list-group-flush">
+      {% for timesheet in group.timesheets %}
+      <a href="{% url 'timesheet:timesheet_detail' timesheet.pk %}"
+        class="list-group-item list-group-item-action border-0 px-4 py-3 d-flex align-items-center">
+        <div class="d-flex align-items-center flex-grow-1">
+          <div class="icon-square bg-light text-primary rounded-3 me-3 d-flex align-items-center justify-content-center"
+            style="width: 40px; height: 40px;">
+            <i class="far fa-calendar-alt fa-lg"></i>
+          </div>
+          <div>
+            <span class="fw-semibold text-dark me-2">
+              {{ timesheet.start_date|date:"d/m" }} a {{ timesheet.end_date|date:"d/m/Y" }}
+            </span>
+            {% if timesheet.status == 'DRAFT' %}
+            <span class="badge bg-light text-secondary border border-secondary-subtle rounded-pill fw-normal"
+              style="font-size: 0.75rem;">Rascunho</span>
+            {% elif timesheet.status == 'SUBMITTED' %}
+            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill fw-normal"
+              style="font-size: 0.75rem;">Enviado</span>
+            {% elif timesheet.status == 'PARTIALLY_APPROVED' %}
+            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill fw-normal"
+              style="font-size: 0.75rem;">Aprovado Parcialmente</span>
+            {% elif timesheet.status == 'APPROVED' %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill fw-normal"
+              style="font-size: 0.75rem;">Aprovado</span>
+            {% elif timesheet.status == 'REJECTED' %}
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill fw-normal"
+              style="font-size: 0.75rem;">Rejeitado</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="d-flex align-items-center">
+          <form method="post" action="{% url 'timesheet:timesheet_delete' timesheet.pk %}" class="me-3"
+            onsubmit="return confirmDelete(event, this);">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-link text-danger p-0 border-0" title="Excluir">
+              <i class="far fa-trash-alt"></i>
+            </button>
+          </form>
+          <i class="fas fa-chevron-right text-muted opacity-50"></i>
+        </div>
+      </a>
+      {% empty %}
+      <div class="list-group-item px-4 py-4 text-muted">Nenhuma folha neste mês.</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+      <div class="mb-3 text-muted opacity-25">
+        <i class="far fa-calendar-times fa-4x"></i>
+      </div>
+      <h5 class="text-muted fw-normal">Nenhuma folha de ponto encontrada.</h5>
+      <p class="text-muted small">Comece criando uma nova folha de ponto para registrar suas atividades.</p>
+      <a href="{% url 'timesheet:timesheet_create' %}" class="btn btn-primary mt-2">
+        <i class="fas fa-plus me-2"></i> Criar primeira folha
+      </a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

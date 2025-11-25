@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - ERP Moderno{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-stats-grid">
+  <!-- Chamados Abertos -->
+  <a class="stat-card bg-candy-blue" href="{% url 'helpdesk:ticket_list' %}" style="text-decoration: none;">
+    <div class="stat-card-header">
+      <div class="stat-card-title">Chamados Abertos</div>
+      <div class="stat-card-icon"><i class="fas fa-inbox"></i></div>
+    </div>
+    <div class="stat-card-value">{{ open_tickets_count|default:"0" }}</div>
+  </a>
+
+  <!-- Horas no Mês -->
+  <a class="stat-card bg-candy-green" href="{% url 'timesheet:timesheet_list' %}" style="text-decoration: none;">
+    <div class="stat-card-header">
+      <div class="stat-card-title">Horas no Mês</div>
+      <div class="stat-card-icon"><i class="fas fa-clock"></i></div>
+    </div>
+    <div class="stat-card-value">{{ total_hours_month|default:"0h" }}</div>
+  </a>
+
+  <!-- Projetos Ativos -->
+  <a class="stat-card bg-candy-purple" href="{% url 'projects:project_list' %}" style="text-decoration: none;">
+    <div class="stat-card-header">
+      <div class="stat-card-title">Projetos Ativos</div>
+      <div class="stat-card-icon"><i class="fas fa-project-diagram"></i></div>
+    </div>
+    <div class="stat-card-value">{{ active_projects_count|default:"0" }}</div>
+  </a>
+
+  <!-- Minhas Tarefas -->
+  <a class="stat-card bg-candy-orange" href="{% url 'projects:task_list_assigned' %}" style="text-decoration: none;">
+    <div class="stat-card-header">
+      <div class="stat-card-title">Minhas Tarefas</div>
+      <div class="stat-card-icon"><i class="fas fa-tasks"></i></div>
+    </div>
+    <div class="stat-card-value">{{ my_tasks_count|default:"0" }}</div>
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3>Atividades Recentes</h3>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-container">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Atividade</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="3" class="text-center py-4 text-muted">
+              <i class="fas fa-history fa-2x mb-2 d-block opacity-25"></i>
+              Nenhuma atividade recente.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Folha de Ponto{% endblock %}
+{% block page_title %}Folha de Ponto{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:1400px; width:100%; margin:0 auto; padding:1.2rem 1.2rem 1.2rem 1.2rem; border-radius:1.1rem; box-shadow:var(--shadow-md); background:rgba(255,255,255,0.92);">
+    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;padding-bottom:0.7rem;margin-bottom:0.7rem;">
+        <h3 style="font-size:1.2rem;font-weight:700;color:var(--primary-color);margin:0;">Meus Registros</h3>
+        <a href="{% url 'timesheet:entry_create' %}" class="btn btn-primary" style="padding:0.4rem 1.1rem;font-size:1rem;">Novo Registro</a>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Entrada</th>
+                    <th>Saída</th>
+                    <th>Pausa</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td>{{ entry.date|date:"d/m/Y" }}</td>
+                    <td>{{ entry.start_time|time:"H:i" }}</td>
+                    <td>{{ entry.end_time|time:"H:i"|default:"-" }}</td>
+                    <td>{{ entry.pause_duration }}</td>
+                    <td><strong>{{ entry.total_hours }}</strong></td>
+                    <td>
+                        {% if entry.is_approved %}
+                        <span class="badge badge-success">Aprovado</span>
+                        {% else %}
+                        <span class="badge badge-warning">Pendente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not entry.is_approved %}
+                        <a href="{% url 'timesheet:entry_edit' entry.pk %}" class="btn btn-outline"
+                            style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Editar</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #64748b;">Nenhum registro encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

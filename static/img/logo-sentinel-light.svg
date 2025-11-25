@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" role="img" aria-labelledby="title desc">
+  <title id="title">Sentinel 360</title>
+  <desc id="desc">Sentinel 360 wordmark for light backgrounds</desc>
+  <g fill="#0f172a" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="700">
+    <text font-size="48" x="6" y="76">Sentinel</text>
+    <text font-size="48" x="184" y="76">360</text>
+  </g>
+  <g fill="none" stroke="#0f172a" stroke-width="6" stroke-linecap="round" transform="translate(302 62)">
+    <circle r="34" stroke-dasharray="172 120" />
+    <circle r="34" stroke-dasharray="172 120" stroke-dashoffset="172" />
+  </g>
+</svg>
+</svg>

@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ERP System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .login-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .brand-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0d3c61;
+            text-align: center;
+            margin-bottom: 2rem;
+            letter-spacing: -0.5px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #344767;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            padding: 0.75rem 1rem;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            border-color: #0d3c61;
+            box-shadow: 0 0 0 3px rgba(13, 60, 97, 0.1);
+        }
+
+        .btn-primary {
+            background-color: #0d3c61;
+            border: none;
+            padding: 0.75rem;
+            font-weight: 600;
+            border-radius: 8px;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #0a2e4b;
+        }
+
+        .forgot-password {
+            font-size: 0.85rem;
+            color: #0d3c61;
+            text-decoration: none;
+            float: right;
+        }
+
+        .form-check-input:checked {
+            background-color: #0d3c61;
+            border-color: #0d3c61;
+        }
+
+        .internal-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-decoration: none;
+        }
+
+        .internal-link:hover {
+            color: #0d3c61;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <div class="brand-logo">stratesys</div>
+
+        <form method="post">
+            {% csrf_token %}
+            {% if form.errors %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {% for field in form %}
+                {% for error in field.errors %}
+                <strong>{{ field.label }}:</strong> {{ error }}<br>
+                {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                {{ error }}
+                {% endfor %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="username" class="form-label">Login</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Digite seu usuário"
+                    required>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="password" class="form-label mb-0">Senha</label>
+                    <a href="#" class="forgot-password">Senha perdida</a>
+                </div>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Digite sua senha"
+                    required>
+            </div>
+
+            <div class="mb-4 form-check">
+                <input type="checkbox" class="form-check-input" id="remember">
+                <label class="form-check-label text-muted small" for="remember">Permanecer logado</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        <a href="{% url 'core:portal_login' %}" class="internal-link">Fazer login como cliente</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

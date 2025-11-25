@@ -1,0 +1,74 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {{ media }}
+  <script src="{% static 'admin/js/cancel.js' %}" async></script>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} delete-confirmation{% endblock %}
+
+{% block content %}
+  {% if perms_lacking or protected %}
+    <div class="border border-base-200 rounded-default shadow-xs dark:border-base-800">
+      <p class="font-semibold p-4 text-font-important-light dark:text-font-important-dark">
+        {% if perms_lacking %}
+          {% blocktranslate with escaped_object=object %}Excluir {{ object_name }} “{{ escaped_object }}” removeria objetos relacionados, mas sua conta não tem permissão para excluir:{% endblocktranslate %}
+        {% else %}
+          {% blocktranslate with escaped_object=object %}Excluir {{ object_name }} “{{ escaped_object }}” exigiria excluir itens protegidos:{% endblocktranslate %}
+        {% endif %}
+      </p>
+      <div class="border-t border-base-200 p-4 dark:border-base-800">
+        <ul class="leading-relaxed">
+          {% if perms_lacking %}
+            {% for obj in perms_lacking %}<li>{{ obj }}</li>{% endfor %}
+          {% else %}
+            {% for obj in protected %}<li>{{ obj }}</li>{% endfor %}
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  {% else %}
+    <div class="border border-base-200 rounded-default shadow-sm dark:border-base-800 bg-white dark:bg-base-900">
+      <div class="p-5 flex items-start gap-3">
+        <span class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-red-50 text-red-600">
+          <i class="fas fa-trash"></i>
+        </span>
+        <div>
+          <p class="font-semibold text-font-important-light dark:text-font-important-dark">
+            {% blocktranslate with escaped_object=object %}Tem certeza que deseja excluir {{ object_name }} “{{ escaped_object }}”?{% endblocktranslate %}
+          </p>
+          <p class="text-sm text-font-default-light dark:text-font-default-dark">
+            Esta ação não pode ser desfeita e removerá todos os itens relacionados.
+          </p>
+        </div>
+      </div>
+
+      {% include "admin/includes/object_delete_summary.html" %}
+
+      <div class="border-t border-base-200 p-5 dark:border-base-800">
+        <h2 class="font-semibold mb-2 text-font-important-light dark:text-font-important-dark">{% translate "Objetos" %}</h2>
+        <ul class="leading-relaxed text-sm">
+          {{ deleted_objects|unordered_list }}
+        </ul>
+      </div>
+
+      <form method="post" class="border-t border-base-200 px-5 py-4 flex items-center gap-2 dark:border-base-800">
+        {% csrf_token %}
+        <input type="hidden" name="post" value="yes">
+        {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1">{% endif %}
+        {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">{% endif %}
+
+        <a href="javascript:history.back()" class="btn btn-outline-secondary"
+           style="transition: background-color 0.15s ease, color 0.15s ease; padding: 0.5rem 1.1rem; border-radius: 10px;">
+          {% translate "Cancelar" %}
+        </a>
+        <button type="submit" class="btn btn-danger"
+                style="transition: background-color 0.15s ease, box-shadow 0.15s ease; padding: 0.5rem 1.1rem; border-radius: 10px;">
+          {% translate "Confirmar exclusão" %}
+        </button>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block branding %}
+<div style="display:flex; align-items:center; gap:14px;">
+  <h1 id="site-name" style="margin: 0;">
+    <a href="{% url 'admin:index' %}" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none;">
+      <img src="{% static 'img/logo.png' %}" alt="Stratesys" style="height: 42px; width: auto;">
+      <span style="font-weight: 700; color: #0f172a; font-size: 18px;">Painel administrativo</span>
+    </a>
+  </h1>
+  <a href="{% url 'admin:api_integrationapp_changelist' %}" class="button" style="padding:8px 12px; background:#00446d; color:#fff; border-radius:8px; text-decoration:none; font-size:14px;">API & Integrações</a>
+</div>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <style>
+    #header { padding: 14px 20px; }
+    #site-name img { height: 42px; width: auto; }
+    #site-name a { color: inherit; }
+  </style>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Tarefa{% endblock %}
+{% block page_title %}Nova Tarefa{% endblock %}
+
+{% block extra_css %}
+<style>
+  .task-layout .task-description { min-height: 140px; }
+  .task-layout .card-body { padding: 1rem 1.1rem 0.9rem 1.1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="post" id="taskForm" novalidate>
+  {% csrf_token %}
+  <div class="card task-layout" style="background:#f4f8ff; border:1px solid #e0e7ff; border-radius:12px;">
+    <div class="card-body">
+      <h4 class="mb-3" style="color:#1f2937;">Nova Tarefa</h4>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Título <span style="color:#e11d48;">*</span></label>
+        <input type="text" class="form-control" id="taskTitle" name="title" placeholder="Título" required aria-required="true">
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label fw-semibold" style="color:#374151;">Descrição</label>
+        <div class="border rounded" style="border-color:#d9e2ec; background:white;">
+          <textarea class="form-control border-0 task-description" placeholder="Descrição" name="description"></textarea>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-between">
+        <span class="fw-semibold" style="color:#374151;">Atributos adicionais</span>
+      </div>
+      <hr class="mt-2 mb-3" />
+
+      {% if selected_project %}
+        <input type="hidden" name="project" value="{{ selected_project.id }}">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Projeto</label>
+          <div class="form-control-plaintext fw-semibold">{{ selected_project.name }}</div>
+        </div>
+      {% else %}
+      <div class="mb-3">
+          <label class="form-label fw-semibold">Projeto <span style="color:#e11d48;">*</span></label>
+        <select class="form-select" id="taskProject" name="project" required aria-required="true">
+          <option value="" selected disabled>Selecione</option>
+          {% for project in projects %}
+          <option value="{{ project.id }}">{{ project.name }}</option>
+          {% empty %}
+          <option disabled>Sem projetos cadastrados</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Tipo <span style="color:#e11d48;">*</span></label>
+          <select class="form-select" id="taskType" name="task_type" required aria-required="true">
+            <option value="" selected disabled>Selecione</option>
+            <option>Help Desk</option>
+            <option>Tarefa</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Responsável</label>
+          <select class="form-select" name="assigned_to">
+            <option value="" selected disabled>Selecionar</option>
+            {% for user in internal_users %}
+            <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
+            {% empty %}
+            <option disabled>Sem usu�rios internos</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Data Início</label>
+          <input type="date" class="form-control" id="taskStartDate" name="start_date">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Data Fim</label>
+          <input type="date" class="form-control" name="due_date">
+        </div>
+        <div class="col-md-4"></div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex justify-content-end mt-3 gap-2">
+    <a href="{{ cancel_url }}" class="btn btn-outline">Cancelar</a>
+    <button class="btn btn-primary" id="taskSaveBtn" type="submit">Salvar</button>
+  </div>
+</form>
+
+<!-- Modal de alerta custom -->
+<div id="taskAlertModal" class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Aten��o</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p id="taskAlertMessage" class="mb-0"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const titleInput = document.getElementById('taskTitle');
+    const typeSelect = document.getElementById('taskType');
+    const projectSelect = document.getElementById('taskProject');
+    const form = document.getElementById('taskForm');
+    const saveBtn = document.getElementById('taskSaveBtn');
+    const startDateInput = document.getElementById('taskStartDate');
+
+    // Preenche Data In�cio com a data de hoje, se estiver vazio
+    if (startDateInput && !startDateInput.value) {
+      const today = new Date().toISOString().split('T')[0];
+      startDateInput.value = today;
+    }
+
+    if (saveBtn && form) {
+      saveBtn.addEventListener('click', (e) => {
+        const missing = [];
+        if (!titleInput.value.trim()) {
+          missing.push('T�tulo');
+        }
+        if (!typeSelect.value) {
+          missing.push('Tipo');
+        }
+        if (projectSelect && !projectSelect.value) {
+          missing.push('Projeto');
+        }
+        if (missing.length) {
+          e.preventDefault();
+          const msg = 'Preencha os campos obrigatórios: ' + missing.join(', ');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          const modalEl = document.getElementById('taskAlertModal');
+          const msgEl = document.getElementById('taskAlertMessage');
+          if (modalEl && msgEl && window.bootstrap) {
+            msgEl.textContent = msg;
+            const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            bsModal.show();
+          } else {
+            alert(msg);
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Tarefas{% endblock %}
+{% block page_title %}Tarefas{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h3 class="mb-0">Minhas Tarefas</h3>
+    <a href="{% url 'projects:task_quick_create' %}" class="btn btn-primary" style="padding:0.4rem 1.1rem;font-size:1rem;">
+      <i class="fas fa-plus me-2"></i> Nova Tarefa
+    </a>
+  </div>
+  <div class="table-container">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Título</th>
+          <th>Projeto</th>
+          <th>Prioridade</th>
+          <th>Status</th>
+          <th>Início</th>
+          <th>Fim</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in tasks %}
+        <tr>
+          <td style="width: 70px;">
+            <a href="{% url 'projects:task_detail' task.id %}" style="color: var(--primary-color); font-weight: 600;">#{{ task.public_id|default:task.id }}</a>
+          </td>
+          <td>{{ task.title }}</td>
+          <td>{{ task.project.name|default:"-" }}</td>
+          <td>
+            {% if task.priority == 'HIGH' %}
+              <span class="badge badge-danger">Alta</span>
+            {% elif task.priority == 'LOW' %}
+              <span class="badge badge-secondary">Baixa</span>
+            {% else %}
+              <span class="badge badge-info">Média</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if task.status == 'DONE' %}
+              <span class="badge badge-success">Concluída</span>
+            {% elif task.status == 'DOING' %}
+              <span class="badge badge-warning">Em andamento</span>
+            {% else %}
+              <span class="badge badge-secondary">A fazer</span>
+            {% endif %}
+          </td>
+          <td>{{ task.start_date|date:"d/m/Y"|default:"-" }}</td>
+          <td>{{ task.due_date|date:"d/m/Y"|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">Nenhuma tarefa atribuída.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

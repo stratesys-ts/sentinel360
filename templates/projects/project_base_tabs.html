@@ -1,0 +1,35 @@
+{% comment %}
+  Base parcial para tabs de projeto. Espera variáveis:
+  - project
+  - active_tab (geral, tarefas, kanban, riscos, horas)
+{% endcomment %}
+<ul class="nav project-tabs" id="projectTabs">
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'geral' %}active{% endif %}" href="{% url 'projects:project_detail' project.pk %}">Geral</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'tarefas' %}active{% endif %}" href="{% url 'projects:project_tasks' project.pk %}">Tarefas</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'kanban' %}active{% endif %}" href="{% url 'projects:project_kanban' project.pk %}">Kanban</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'riscos' %}active{% endif %}" href="{% url 'projects:project_risks' project.pk %}">Riscos</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'horas' %}active{% endif %}" href="{% url 'projects:project_hours' project.pk %}">Horas trabalhadas</a>
+  </li>
+</ul>
+
+<script>
+  // Ajusta o atalho "Criar Tarefa" para já trazer o projeto atual em qualquer aba do projeto
+  document.addEventListener('DOMContentLoaded', () => {
+    const quickAddMenu = document.getElementById('quickAddMenu');
+    const taskLink = quickAddMenu?.querySelector('[data-quick-add="task"]');
+    if (!taskLink) return;
+
+    const url = new URL(taskLink.href, window.location.origin);
+    url.searchParams.set('project', '{{ project.pk }}');
+    taskLink.href = url.toString();
+  });
+</script>

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Excluir Projeto{% endblock %}
+{% block content %}
+<div class="card" style="max-width:500px;margin:3rem auto;padding:2rem 2rem 1.5rem 2rem;">
+    <h3 style="color:var(--danger-color);font-weight:700;">Excluir Projeto</h3>
+    <p>Tem certeza que deseja excluir o projeto <strong>{{ object.name }}</strong>?</p>
+    <form method="post" style="margin-top:2rem;display:flex;justify-content:flex-end;gap:1rem;">
+        {% csrf_token %}
+        <a href="{% url 'projects:project_list' %}" class="btn btn-outline">Cancelar</a>
+        <button type="submit" class="btn btn-danger">Excluir</button>
+    </form>
+</div>
+{% endblock %}

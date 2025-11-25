@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQ e Guias Rápidos{% endblock %}
+{% block page_title %}FAQ e Guias Rápidos{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+  <div class="card-body d-flex align-items-center gap-3">
+    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 46px; height: 46px;">
+      <i class="fas fa-question-circle fa-lg"></i>
+    </div>
+    <div>
+      <h4 class="mb-1">Dúvidas rápidas</h4>
+      <p class="mb-0 text-muted">Passo a passo para criar ticket, lançar horas e aprovar folhas de ponto.</p>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="p-3 rounded border h-100">
+      <div class="d-flex align-items-center mb-2 gap-2">
+        <i class="fas fa-ticket-alt text-primary"></i>
+        <h5 class="mb-0">Criar ticket</h5>
+      </div>
+      <ol class="ps-3 small mb-3">
+        <li>Menu Help Desk → “Novo ticket”.</li>
+        <li>Preencha título, categoria, prioridade e descrição.</li>
+        <li>Anexe arquivo se precisar e salve.</li>
+      </ol>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'helpdesk:ticket_create' %}">Abrir novo ticket</a>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="p-3 rounded border h-100">
+      <div class="d-flex align-items-center mb-2 gap-2">
+        <i class="fas fa-calendar-week text-primary"></i>
+        <h5 class="mb-0">Criar folha de ponto</h5>
+      </div>
+      <ol class="ps-3 small mb-3">
+        <li>Menu Folha de Ponto → “Nova folha”.</li>
+        <li>Escolha data inicial (fecha a semana automaticamente).</li>
+        <li>Adicione linhas de projeto/tarefa/atividade e lance horas do dia.</li>
+        <li>Salvar rascunho ou Enviar para aprovação.</li>
+      </ol>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'timesheet:timesheet_list' %}">Ir para folhas</a>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="p-3 rounded border h-100">
+      <div class="d-flex align-items-center mb-2 gap-2">
+        <i class="fas fa-check-double text-primary"></i>
+        <h5 class="mb-0">Aprovar folha de ponto</h5>
+      </div>
+      <ol class="ps-3 small mb-3">
+        <li>Menu “Minhas aprovações”.</li>
+        <li>Abra a folha com status Enviado/Parcial.</li>
+        <li>Revise horas por projeto e clique Aprovar ou Rejeitar (adicione motivo).</li>
+      </ol>
+      <p class="text-muted small mb-3">Gestores veem projetos em que são responsáveis; admins veem tudo.</p>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'timesheet:timesheet_approval_list' %}">Ver pendências</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

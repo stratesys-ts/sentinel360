@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Meu Perfil{% endblock %}
+{% block page_title %}Meu Perfil{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h3 class="mb-3">Dados do usuário</h3>
+    <p><strong>Usuário:</strong> {{ user_profile.username }}</p>
+    <p><strong>Nome:</strong> {{ user_profile.get_full_name|default:"-" }}</p>
+    <p><strong>Email:</strong> {{ user_profile.email|default:"-" }}</p>
+    <p><strong>Papel:</strong> {{ user_profile.role|default:"-" }}</p>
+  </div>
+</div>
+{% endblock %}

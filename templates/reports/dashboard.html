@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% block title %}Relatórios{% endblock %}
+{% block extra_css %}
+<style>
+  .card-soft {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+  }
+  .kpi {
+    padding: 0.9rem 1rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    border: 1px solid #e5e7eb;
+  }
+  .kpi .label { color: #6b7280; font-size: 0.85rem; }
+  .kpi .value { font-size: 1.4rem; font-weight: 700; color: #111827; }
+  .chart-area {
+    min-height: 320px;
+  }
+  .export-buttons .btn {
+    min-width: 120px;
+  }
+  .filters-bar {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.75rem 0.35rem;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  }
+  .chart-card {
+    min-height: 320px;
+  }
+  .filters-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{% url 'projects:project_list' %}" class="btn btn-outline-secondary" style="border-radius: 999px;">
+        <i class="fas fa-arrow-left me-1"></i> Voltar
+      </a>
+      <div>
+        <h2 class="h4 mb-0">Relatórios</h2>
+        <small class="text-muted">Visão de aprovações e horas lançadas</small>
+      </div>
+    </div>
+    <div class="export-buttons d-flex gap-2">
+      <a href="{% url 'timesheet:reports_export' %}?format=csv" class="btn btn-outline-secondary btn-sm">Exportar CSV</a>
+      <a href="{% url 'timesheet:reports_export' %}?format=xlsx" class="btn btn-outline-secondary btn-sm">Exportar XLSX</a>
+      <a href="{% url 'timesheet:reports_export' %}?format=pdf" class="btn btn-outline-secondary btn-sm">Exportar PDF</a>
+    </div>
+  </div>
+
+  <form method="get" class="filters-bar mb-3">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-3">
+        <label class="form-label text-muted mb-1">Data início</label>
+        <input type="date" class="form-control" name="start_date" value="{{ filters.start_date }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-muted mb-1">Data fim</label>
+        <input type="date" class="form-control" name="end_date" value="{{ filters.end_date }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-muted mb-1">Status</label>
+        <select class="form-select" name="status">
+          <option value="">Todos</option>
+          <option value="DRAFT" {% if filters.status == 'DRAFT' %}selected{% endif %}>Rascunho</option>
+          <option value="SUBMITTED" {% if filters.status == 'SUBMITTED' %}selected{% endif %}>Enviado</option>
+          <option value="PARTIALLY_APPROVED" {% if filters.status == 'PARTIALLY_APPROVED' %}selected{% endif %}>Parcial</option>
+          <option value="APPROVED" {% if filters.status == 'APPROVED' %}selected{% endif %}>Aprovado</option>
+          <option value="REJECTED" {% if filters.status == 'REJECTED' %}selected{% endif %}>Rejeitado</option>
+        </select>
+      </div>
+      <div class="col-md-3 filters-actions">
+        <div class="w-100 d-flex gap-2">
+          <button type="submit" class="btn btn-primary flex-fill">Aplicar</button>
+          <a href="{% url 'timesheet:reports_dashboard' %}" class="btn btn-light flex-fill">Limpar</a>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12">
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="label">Total de timesheets</div>
+          <div class="value">{{ kpis.total_ts }}</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Pendentes</div>
+          <div class="value text-warning">{{ kpis.pending }}</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Parcial</div>
+          <div class="value text-info">{{ kpis.partial }}</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Aprovadas</div>
+          <div class="value text-success">{{ kpis.approved }}</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Rejeitadas</div>
+          <div class="value text-danger">{{ kpis.rejected }}</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Horas totais</div>
+          <div class="value">{{ kpis.hours_total|floatformat:2 }}</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Horas/mês (média)</div>
+          <div class="value">{{ kpis.avg_hours_per_month|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-lg-4 col-xl-3">
+      <div class="card-soft p-3 chart-card h-100">
+        <h6 class="text-muted">Timesheets por status</h6>
+        <div class="chart-area">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-xl-3">
+      <div class="card-soft p-3 chart-card h-100">
+        <h6 class="text-muted">Aprovações</h6>
+        <div class="chart-area">
+          <canvas id="approvalsChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-xl-3">
+      <div class="card-soft p-3 chart-card h-100">
+        <h6 class="text-muted">Horas por mês</h6>
+        <div class="chart-area">
+          <canvas id="monthlyChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-xl-3">
+      <div class="card-soft p-3 chart-card h-100">
+        <h6 class="text-muted">Top usuários por horas</h6>
+        <div class="chart-area">
+          <canvas id="topUsersChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-soft p-3">
+    <h6 class="text-muted mb-2">Detalhe de status</h6>
+    <div class="table-responsive">
+      <table class="table table-modern align-middle">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th class="text-end">Total</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const statusData = JSON.parse('{{ status_data|escapejs }}');
+  const monthlyHours = JSON.parse('{{ monthly_hours|escapejs }}');
+  const topUsers = JSON.parse('{{ top_users|escapejs }}');
+  const approvals = {{ approvals|safe }};
+
+  // Populate detail table
+  const tbody = document.querySelector('table tbody');
+  tbody.innerHTML = '';
+  statusData.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${item.status || '-'}</td><td class="text-end">${item.total}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const statusCtx = document.getElementById('statusChart');
+  new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+      labels: statusData.map(i => i.status),
+      datasets: [{
+        data: statusData.map(i => i.total),
+        backgroundColor: ['#6366f1','#a855f7','#10b981','#f59e0b','#ef4444'],
+      }]
+    },
+    options: {plugins:{legend:{position:'bottom'}}}
+  });
+
+  const approvalsCtx = document.getElementById('approvalsChart');
+  new Chart(approvalsCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Pendentes','Parcial','Aprovadas','Rejeitadas'],
+      datasets: [{
+        label: 'Quantidade',
+        data: [approvals.pending, approvals.partial, approvals.approved, approvals.rejected],
+        backgroundColor: '#6366f1'
+      }]
+    },
+    options: {plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}, maintainAspectRatio:false}
+  });
+
+  const monthlyCtx = document.getElementById('monthlyChart');
+  new Chart(monthlyCtx, {
+    type: 'line',
+    data: {
+      labels: monthlyHours.map(i => i.month.substring(0,7)),
+      datasets: [{
+        label: 'Horas',
+        data: monthlyHours.map(i => i.total),
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.2)',
+        tension: 0.3,
+        fill: true,
+      }]
+    },
+    options: {plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}, maintainAspectRatio:false}
+  });
+
+  const topUsersCtx = document.getElementById('topUsersChart');
+  new Chart(topUsersCtx, {
+    type: 'bar',
+    data: {
+      labels: topUsers.map(i => i.timesheet__user__username || '-'),
+      datasets: [{
+        label: 'Horas',
+        data: topUsers.map(i => i.total),
+        backgroundColor: '#f97316'
+      }]
+    },
+    options: {plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}, maintainAspectRatio:false}
+  });
+</script>
+{% endblock %}

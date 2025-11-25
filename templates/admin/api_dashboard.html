@@ -1,0 +1,113 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}API & Integrações{% endblock %}
+
+{% block content %}
+<style>
+  .api-hero {
+    background: linear-gradient(120deg, #00446d, #0d5c8b);
+    color: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  }
+  .api-hero h2 { margin: 0; font-size: 24px; font-weight: 700; }
+  .api-hero p { margin: 8px 0 0; opacity: 0.92; }
+  .api-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 20px; }
+  .api-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.03);
+  }
+  .api-card h5 { margin: 0; font-size: 16px; font-weight: 700; color: #0f172a; }
+  .api-card p { margin: 0; color: #6b7280; font-size: 14px; }
+  .api-card a { align-self: flex-start; }
+  .api-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .api-badge { background: #eef2ff; color: #4338ca; padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+  .api-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .api-meta .box {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .api-meta h6 { margin: 0 0 6px; font-size: 14px; font-weight: 700; color: #0f172a; }
+  .api-meta code { background: #f3f4f6; padding: 3px 6px; border-radius: 6px; font-size: 12px; display: inline-block; }
+  .endpoint-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+  .endpoint { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .endpoint .method { font-weight: 700; color: #00446d; background: #e0ecf5; padding: 3px 6px; border-radius: 6px; min-width: 46px; text-align: center; }
+</style>
+
+<div class="api-hero">
+  <div>
+    <h2>API & Integrações</h2>
+    <p>Conecte o Sentinel 360 a ferramentas externas usando nossas APIs e fluxos prontos.</p>
+    <div class="api-badges">
+      <span class="api-badge">REST</span>
+      <span class="api-badge">OAuth2</span>
+      <span class="api-badge">Webhooks</span>
+    </div>
+  </div>
+  <div>
+    <a class="button" style="padding:10px 16px; background:#fff; color:#00446d; border-radius:10px; border:1px solid rgba(255,255,255,0.4); text-decoration:none; font-weight:700;" href="{{ guide_url }}" target="_blank" rel="noopener">Ver guia completo</a>
+  </div>
+</div>
+
+<div class="api-meta">
+  <div class="box">
+    <h6>Base URL</h6>
+    <code>{{ base_url|default:'/api/' }}</code>
+  </div>
+  <div class="box">
+    <h6>Documentação (Swagger)</h6>
+    <a href="{{ docs_url }}" target="_blank" rel="noopener">{{ docs_url }}</a>
+  </div>
+  <div class="box">
+    <h6>Healthcheck</h6>
+    <a href="{{ health_url }}" target="_blank" rel="noopener">{{ health_url }}</a>
+  </div>
+  <div class="box">
+    <h6>Autenticação</h6>
+    <p class="mb-1" style="font-size:13px;">Envie o header:</p>
+    <code>{{ auth_header|default:"X-API-Key" }}: &lt;sua-chave&gt;</code>
+  </div>
+</div>
+
+<div class="box" style="margin-top:14px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px 14px;">
+  <h6>Endpoints</h6>
+  <ul class="endpoint-list">
+    {% for ep in endpoints %}
+    <li class="endpoint">
+      <span class="method">{{ ep.method }}</span>
+      <span>{{ ep.path }}</span>
+      <span style="color:#6b7280;">— {{ ep.desc }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="api-grid">
+  {% for item in integrations %}
+  <div class="api-card">
+    <h5>{{ item.name }}</h5>
+    <p>{{ item.desc }}</p>
+    <a href="{{ item.url }}" target="_blank" rel="noopener" class="button" style="padding:8px 12px; background:#00446d; color:#fff; border-radius:8px; text-decoration:none; font-size:13px;">{{ item.cta }}</a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

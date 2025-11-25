@@ -1,0 +1,125 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ERP System{% endblock %}</title>
+    <!-- Fontes Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- CSS customizado -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=3.0" />
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="app-container">
+        <div class="sidebar-overlay"></div>
+        {% include 'sidebar.html' %}
+
+        <main class="main-content">
+            <div class="content-wrapper p-3">
+                {% if messages %}
+                <div class="messages mb-3">
+                    {% for message in messages %}
+                    <div class="alert alert-info p-3 mb-2 rounded">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- JS Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+
+    <!-- Global Delete Confirmation Modal -->
+    <div class="modal" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-body text-center p-5">
+                    <div class="mb-4 text-danger">
+                        <i class="fas fa-trash-alt fa-4x"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Confirmar Exclusão</h4>
+                    <p class="text-muted mb-4">Tem certeza que deseja excluir este item? Esta ação não pode ser
+                        desfeita.</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="button" class="btn btn-secondary px-4 rounded-pill fw-bold"
+                            data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger px-4 rounded-pill fw-bold"
+                            onclick="submitDelete()">Excluir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let formToDelete = null;
+        let deleteModalInstance = null;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var modalEl = document.getElementById('deleteConfirmationModal');
+            if (modalEl) {
+                deleteModalInstance = new bootstrap.Modal(modalEl);
+            }
+
+            // Mobile Sidebar Toggle Logic
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+
+            if (navbarToggler && sidebar && overlay) {
+                navbarToggler.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation(); // Prevent Bootstrap collapse from interfering if needed
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+
+                overlay.addEventListener('click', function () {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+        });
+
+        function confirmDelete(event, form) {
+            event.preventDefault();
+            formToDelete = form;
+            if (deleteModalInstance) {
+                deleteModalInstance.show();
+            } else {
+                // Fallback just in case
+                var modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+                modal.show();
+            }
+            return false;
+        }
+
+        function submitDelete() {
+            if (formToDelete) {
+                formToDelete.submit();
+            }
+        }
+    </script>
+</body>
+
+</html>

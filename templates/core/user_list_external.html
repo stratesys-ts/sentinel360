@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Usuários Externos{% endblock %}
+{% block page_title %}Usuários Externos{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>Lista de Usuários Externos (Clientes)</h3>
+        <a href="{% url 'core:external_user_add' %}" class="btn btn-primary">Adicionar Usuário Externo</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Projeto Vinculado</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.get_full_name|default:user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.client_project.name|default:"-" }}</td>
+                    <td>
+                        {% if user.is_active %}
+                        <span class="badge badge-success">Ativo</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Inativo</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center;">Nenhum usuário externo encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

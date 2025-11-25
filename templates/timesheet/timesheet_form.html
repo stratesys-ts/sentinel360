@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Folha de Ponto{% endblock %}
+{% block page_title %}Nova Folha de Ponto{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-header">
+        <h3>Criar Nova Folha</h3>
+    </div>
+    <form method="post" style="padding: 20px;">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="{{ form.start_date.id_for_label }}" class="form-label">Data de Início</label>
+            {{ form.start_date }}
+            <small class="form-text text-muted">A folha cobrirá 7 dias a partir desta data.</small>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+            <a href="{% url 'timesheet:timesheet_list' %}" class="btn btn-outline">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Criar</button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal de Erro -->
+<div class="modal" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4 text-danger">
+                    <i class="fas fa-times-circle fa-4x"></i>
+                </div>
+                <h4 class="fw-bold mb-3 text-danger">Erro ao Criar Folha</h4>
+                <div class="text-muted mb-4">
+                    {% if form.errors %}
+                    {% for field in form %}
+                    {% for error in field.errors %}
+                    <p class="mb-1">{{ error }}</p>
+                    {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                    <p class="mb-1">{{ error }}</p>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                <button type="button" class="btn btn-danger px-4 rounded-pill fw-bold"
+                    data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var hasErrors = "{{ form.errors|yesno:'true,false' }}" === "true";
+        if (hasErrors) {
+            var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            errorModal.show();
+        }
+    });
+</script>
+{% endblock %}

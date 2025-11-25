@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Novo Projeto{% endblock %}
+{% block page_title %}Novo Projeto{% endblock %}
+
+{% block content %}
+<div class="card"
+    style="width: 100%; padding: 2rem 1.2rem 1.2rem 1.2rem; box-shadow: var(--shadow-sm); border-radius: var(--radius-md);">
+    <form method="post" autocomplete="off" style="width:100%;">
+        {% csrf_token %}
+        <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:2.2rem;color:var(--brand-blue);letter-spacing:-1px;">
+            Dados do Projeto</h2>
+        <div
+            style="display:grid;grid-template-columns:2.5fr 1fr 1fr;gap:1.1rem;margin-bottom:0.7rem;align-items:end;">
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}" class="form-label">Nome do Projeto</label>
+                {{ form.name }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                {{ form.status }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.project_manager.id_for_label }}" class="form-label">Gerente</label>
+                {{ form.project_manager }}
+            </div>
+        </div>
+        <div
+            style="display:grid;grid-template-columns:1fr;gap:1.1rem;margin-bottom:0.7rem;align-items:end;">
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}" class="form-label">Descrição</label>
+                {{ form.description }}
+            </div>
+        </div>
+        <div
+            style="display:grid;grid-template-columns:repeat(5, 1fr);gap:1.1rem;margin-bottom:0.7rem;align-items:end;">
+            <div class="form-group">
+                <label for="{{ form.start_date.id_for_label }}" class="form-label">Data Início</label>
+                {{ form.start_date }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.end_date.id_for_label }}" class="form-label">Data Fim</label>
+                {{ form.end_date }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.industry.id_for_label }}" class="form-label">Indústria</label>
+                {{ form.industry }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.geography.id_for_label }}" class="form-label">Geografia</label>
+                {{ form.geography }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.team.id_for_label }}" class="form-label">Membro de Equipe</label>
+                {{ form.team }}
+            </div>
+        </div>
+        <div
+            style="display:grid;grid-template-columns:repeat(4, 1fr);gap:1.1rem;margin-bottom:0.7rem;align-items:end;">
+            <div class="form-group">
+                <label for="{{ form.currency.id_for_label }}" class="form-label">Moeda</label>
+                {{ form.currency }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.cost_center.id_for_label }}" class="form-label">Centro de Custo</label>
+                {{ form.cost_center }}
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;">
+                {{ form.external_access }}
+                <label class="form-check-label" for="{{ form.external_access.id_for_label }}"
+                    style="margin-left:0.5rem;">Acesso Externo</label>
+            </div>
+            <div></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:0.7rem;margin-top:1.2rem;">
+            <a href="{% url 'projects:project_list' %}" class="btn btn-outline">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Salvar Projeto</button>
+        </div>
+    </form>
+</div>
+
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        new TomSelect("#{{ form.team.id_for_label }}", {
+            plugins: ['remove_button'],
+            create: false,
+            placeholder: 'Selecione os membros...',
+            maxItems: null,
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Projetos{% endblock %}
+{% block page_title %}Projetos{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>Todos os Projetos</h3>
+        {% if perms.projects.add_project %}
+        <a href="{% url 'projects:project_create' %}" class="btn btn-primary"
+            style="padding:0.4rem 1.1rem;font-size:1rem;">
+            <i class="fas fa-plus me-2"></i> Novo Projeto
+        </a>
+        {% endif %}
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Status</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Acesso Externo</th>
+                    <th style="text-align:center;">Total Horas</th>
+                    <th style="text-align:center;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td><a href="{% url 'projects:project_detail' project.pk %}"
+                            style="color: var(--primary-color); font-weight: 600;">{{ project.name }}</a></td>
+                    <td>
+                        {% if project.status == 'PLANNED' %}
+                        <span class="badge badge-info">Planejado</span>
+                        {% elif project.status == 'IN_PROGRESS' %}
+                        <span class="badge badge-warning">Em Andamento</span>
+                        {% elif project.status == 'COMPLETED' %}
+                        <span class="badge badge-success">Concluído</span>
+                        {% else %}
+                        <span class="badge badge-danger">Atrasado</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ project.start_date|date:"d/m/Y" }}</td>
+                    <td>{{ project.end_date|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if project.external_access %}
+                        <span class="badge badge-success">Sim</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Não</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:center; font-weight: 600;">
+                        {{ project.total_hours|default:"0"|floatformat:1 }}h
+                    </td>
+                    <td style="text-align:center;">
+                        {% if perms.projects.change_project %}
+                        <a href="{% url 'projects:project_update' project.pk %}" title="Editar"
+                            style="color:#674ea7; margin-right:0.7rem; font-size:1.1rem;"><i
+                                class="fas fa-edit"></i></a>
+                        {% endif %}
+                        {% if perms.projects.delete_project %}
+                        <form action="{% url 'projects:project_delete' project.pk %}" method="post"
+                            style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" title="Excluir" onclick="return confirmDelete(event, this.form);"
+                                style="background:none;border:none;color:#d9534f;font-size:1.1rem;cursor:pointer;padding:0 0.2rem;">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #64748b;">Nenhum projeto encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

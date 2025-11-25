@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}{{ project.name }} - Kanban{% endblock %}
+{% block page_title %}{{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .project-tabs {
+      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 1rem;
+      gap: 0.25rem;
+  }
+  .project-tabs .nav-link {
+      border: 1px solid transparent;
+      border-bottom: 2px solid transparent;
+      color: #6b7280;
+      padding: 0.65rem 1rem;
+      border-radius: 0.5rem 0.5rem 0 0;
+      font-weight: 600;
+  }
+  .project-tabs .nav-link.active {
+      color: #111827;
+      border-color: #e5e7eb;
+      border-bottom-color: #fff;
+      background: #fff;
+      box-shadow: inset 0 -2px 0 #6366f1;
+  }
+  .project-tabs .nav-link:hover {
+      color: #111827;
+      background: #f3f4f6;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 1.25rem 1.25rem 0 1.25rem;">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border: none; background: transparent; padding: 0 0 1rem 0;">
+    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+      <a href="{% url 'projects:project_list' %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </a>
+      <h3 style="margin: 0;">{{ project.name }}</h3>
+      <span class="badge badge-info">{{ project.get_status_display|default:"" }}</span>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        {% if perms.projects.change_project %}
+        <a href="{% url 'projects:project_update' project.pk %}" class="btn btn-outline" style="display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-edit"></i> Editar
+        </a>
+        {% endif %}
+        {% if perms.projects.delete_project %}
+        <form action="{% url 'projects:project_delete' project.pk %}" method="post" style="display: inline;">
+          {% csrf_token %}
+          <button type="button" class="btn btn-outline-danger-custom" onclick="confirmDelete(event, this.closest('form'))">
+            <i class="fas fa-trash"></i> Excluir
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="card-body" style="padding-top: 0;">
+    {% include "projects/project_base_tabs.html" with active_tab="kanban" %}
+  </div>
+</div>
+
+<div class="kanban-board" style="margin-top: 1.5rem;">
+    <!-- A fazer -->
+    <div class="kanban-column">
+        <div class="kanban-header">
+            <span>A fazer</span>
+            <span class="badge badge-secondary">{{ todo_tasks.count }}</span>
+        </div>
+        {% for task in todo_tasks %}
+        <div class="kanban-card">
+            <div style="font-weight: 500; margin-bottom: 0.5rem;">{{ task.title }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">{{ task.assigned_to.get_full_name|default:"Sem responsável" }}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge badge-warning">{{ task.get_priority_display }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">Nenhuma tarefa em aberto.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Em andamento -->
+    <div class="kanban-column">
+        <div class="kanban-header">
+            <span>Em andamento</span>
+            <span class="badge badge-info">{{ doing_tasks.count }}</span>
+        </div>
+        {% for task in doing_tasks %}
+        <div class="kanban-card">
+            <div style="font-weight: 500; margin-bottom: 0.5rem;">{{ task.title }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">{{ task.assigned_to.get_full_name|default:"Sem responsável" }}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge badge-warning">{{ task.get_priority_display }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">Nenhuma tarefa em andamento.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Concluído -->
+    <div class="kanban-column">
+        <div class="kanban-header">
+            <span>Concluído</span>
+            <span class="badge badge-success">{{ done_tasks.count }}</span>
+        </div>
+        {% for task in done_tasks %}
+        <div class="kanban-card" style="opacity: 0.8;">
+            <div style="font-weight: 500; margin-bottom: 0.5rem; text-decoration: line-through;">{{ task.title }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">{{ task.assigned_to.get_full_name|default:"Sem responsável" }}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge badge-success">Feita</span>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">Nenhuma tarefa concluída.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

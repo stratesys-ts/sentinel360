@@ -1,0 +1,179 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+  <div class="container-fluid">
+    <!-- Brand -->
+    <a class="navbar-brand" href="{% url 'core:dashboard' %}">
+      <img src="{% static 'img/logo.png' %}" alt="Stratesys" style="height: 32px;">
+    </a>
+
+    <!-- Toggler -->
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+      aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Content -->
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <!-- Search -->
+      <form class="d-flex ms-auto me-4" role="search" method="GET" action="{% url 'core:search' %}">
+        <div class="input-group">
+          <button class="btn btn-light border-0 rounded-start ps-3 text-muted" type="submit">
+            <i class="fas fa-search fa-sm"></i>
+          </button>
+          <input class="form-control bg-light border-0 rounded-end text-dark" type="search" name="q"
+            placeholder="Pesquisar..." aria-label="Search" style="min-width: 280px; font-size: 0.9rem;">
+        </div>
+      </form>
+
+      <!-- Right Side Icons -->
+      <ul class="navbar-nav align-items-center gap-0">
+        <!-- FAQ Icon -->
+        <li class="nav-item me-1">
+          <a href="{% url 'core:faq' %}" class="nav-link d-flex align-items-center gap-1 p-1" title="FAQ e instruções rápidas" style="color: var(--primary-color);">
+            <i class="fas fa-question-circle" style="font-size: 1rem; color: var(--primary-color);"></i>
+            <span class="d-none d-lg-inline fw-semibold" style="font-size: 0.85rem; color: var(--primary-color);">FAQ</span>
+          </a>
+        </li>
+
+        <!-- Bell Icon -->
+        <li class="nav-item position-relative me-1">
+          <a href="{% url 'helpdesk:ticket_list' %}" class="nav-link p-1" title="Help Desk">
+            <i class="far fa-bell" style="font-size: 1rem;"></i>
+            <span
+              class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+              style="width: 8px; height: 8px;">
+              <span class="visually-hidden">New alerts</span>
+            </span>
+          </a>
+        </li>
+
+        <!-- Quick Add (between bell and user avatar) -->
+        <li class="nav-item dropdown position-relative me-2">
+          <button class="btn btn-warning d-flex align-items-center justify-content-center p-0"
+            id="quickAddToggle" type="button" aria-expanded="false"
+            style="width: 38px; height: 38px; border-radius: 50%; color: #1f2937;">
+            <span class="quick-add-icon" style="font-size:1.5rem; font-weight:500; line-height:1; letter-spacing:-1px;">+</span>
+          </button>
+          <div class="dropdown-menu shadow-sm border-0 quick-add-menu"
+            id="quickAddMenu"
+            style="
+              min-width: 200px;
+              border-radius: 12px;
+              position: absolute;
+              top: calc(100% + 6px);
+              right: 0;
+              left: auto;
+              z-index: 1060;
+              padding-top: 0;
+            "
+          >
+            <!-- SETINHA CORRIGIDA -->
+            <div style="
+                position: absolute;
+                top: -6px;
+                right: 22px; /* POSIÇÃO IDEAL PARA FICAR DEBAIXO DO BOTÃO */
+                width: 12px;
+                height: 12px;
+                background: white;
+                transform: rotate(45deg);
+                box-shadow: -2px -2px 4px rgba(0,0,0,0.04);
+              ">
+            </div>
+
+            <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="{% url 'projects:task_quick_create' %}" data-quick-add="task">
+              <i class="fas fa-clipboard-list text-muted"></i> Tarefa
+            </a>
+
+            <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="{% url 'projects:project_create' %}">
+              <i class="fas fa-project-diagram text-muted"></i> Projeto
+            </a>
+
+            <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="{% url 'timesheet:timesheet_create' %}">
+              <i class="fas fa-calendar-alt text-muted"></i> Folha de Ponto
+            </a>
+          </div>
+        </li>
+
+        <!-- User Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1 p-0" href="#" id="userDropdown"
+            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <div
+              class="avatar-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center shadow-sm"
+              style="width: 32px; height: 32px; border-radius: 50%; font-size: 0.85rem;">
+              {{ user.username|make_list|first|upper }}
+            </div>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-3 rounded-3" aria-labelledby="userDropdown">
+            <li class="px-3 py-2 border-bottom mb-2">
+              <span class="d-block fw-bold text-dark">{{ user.username }}</span>
+              <small class="text-muted">Administrator</small>
+            </li>
+            <li><a class="dropdown-item py-2" href="{% url 'core:profile' %}"><i class="far fa-user me-2 text-muted"></i>Meu Perfil</a></li>
+            <li><a class="dropdown-item py-2" href="{% url 'core:settings' %}"><i class="fas fa-cog me-2 text-muted"></i>Configurações</a>
+            </li>
+            <li>
+              <hr class="dropdown-divider my-1">
+            </li>
+            <li>
+              <form action="{% url 'core:logout' %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item py-2 text-danger">
+                  <i class="fas fa-sign-out-alt me-2"></i>Sair
+                </button>
+              </form>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('quickAddToggle');
+    const menu = document.getElementById('quickAddMenu');
+    const icon = toggle?.querySelector('.quick-add-icon');
+
+    if (!toggle || !menu || !icon) return;
+
+    const closeMenu = () => {
+      menu.classList.remove('show');
+      menu.style.display = 'none';
+      toggle.setAttribute('aria-expanded', 'false');
+      icon.textContent = '+';
+    };
+
+    const openMenu = () => {
+      menu.style.display = 'block';
+      menu.classList.add('show');
+      toggle.setAttribute('aria-expanded', 'true');
+      icon.textContent = '-';
+    };
+
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = menu.classList.contains('show');
+      if (isOpen) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+        closeMenu();
+      }
+    });
+
+    // Close when selecting an option
+    menu.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (link) {
+        closeMenu();
+      }
+    });
+  });
+</script>

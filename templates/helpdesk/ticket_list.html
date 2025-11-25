@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Help Desk - Tickets{% endblock %}
+{% block page_title %}Tickets{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>Meus Chamados</h3>
+        <a href="{% url 'helpdesk:ticket_create' %}" class="btn btn-primary"
+            style="padding:0.4rem 1.1rem;font-size:1rem;">
+            <i class="fas fa-plus me-2"></i> Novo Chamado
+        </a>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Prioridade</th>
+                    <th>Status</th>
+                    <th>Categoria</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td><a href="{% url 'helpdesk:ticket_detail' ticket.pk %}"
+                            style="color: var(--primary-color); font-weight: 600;">#{{ ticket.public_id|default:ticket.id }}</a></td>
+                    <td>{{ ticket.title }}</td>
+                    <td>
+                        {% if ticket.priority == 'CRITICAL' %}
+                        <span class="badge badge-danger">Crítico</span>
+                        {% elif ticket.priority == 'HIGH' %}
+                        <span class="badge badge-warning">Alta</span>
+                        {% elif ticket.priority == 'MEDIUM' %}
+                        <span class="badge badge-info">Média</span>
+                        {% else %}
+                        <span class="badge badge-success">Baixa</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if ticket.status == 'OPEN' %}
+                        <span class="badge badge-warning">Aberto</span>
+                        {% elif ticket.status == 'IN_PROGRESS' %}
+                        <span class="badge badge-info">Em Atendimento</span>
+                        {% elif ticket.status == 'RESOLVED' %}
+                        <span class="badge badge-success">Resolvido</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Fechado</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ ticket.category.name|default:"-" }}</td>
+                    <td>{{ ticket.created_at|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: #64748b;">Nenhum chamado encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

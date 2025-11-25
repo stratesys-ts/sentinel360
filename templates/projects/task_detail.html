@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Tarefa #{{ task.public_id|default:task.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 px-md-2">
+  <div class="d-flex flex-column flex-lg-row gap-3">
+    <!-- Coluna esquerda -->
+    <div class="flex-grow-1 d-flex flex-column gap-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <div class="d-flex flex-column">
+            <h5 class="mb-1">Tarefa #{{ task.public_id|default:task.id }} - {{ task.title }}</h5>
+            <small class="text-muted">Projeto: {{ task.project.name|default:"-" }}{% if task.created_at %} • Criada em {{ task.created_at|date:"d/m/Y H:i" }}{% endif %}</small>
+          </div>
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <a href="{% url 'projects:task_quick_create' %}?project={{ task.project.id }}" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2">
+              <i class="fas fa-plus"></i> Nova tarefa
+            </a>
+            <a href="{% url 'projects:project_tasks' task.project.id %}" class="btn btn-primary btn-sm d-flex align-items-center gap-2">
+              <i class="fas fa-arrow-left"></i> Voltar ao projeto
+            </a>
+            <span class="badge {% if task.status == 'DONE' %}bg-success{% elif task.status == 'DOING' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+              {% if task.status == 'DONE' %}Concluída{% elif task.status == 'DOING' %}Em andamento{% else %}A fazer{% endif %}
+            </span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="p-3 rounded-3 border bg-light">
+            {{ task.description|linebreaks|default:"Sem descrição." }}
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-header">
+          <h5 class="mb-0">Histórico & Comentários</h5>
+        </div>
+        <div class="card-body">
+          <p class="text-center text-muted my-4">Nenhum comentário ainda.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coluna direita -->
+    <div class="flex-shrink-0" style="min-width: 320px;">
+      <div class="card shadow-sm border-0">
+        <div class="card-header">
+          <h6 class="mb-0 text-uppercase text-muted" style="letter-spacing: 0.5px;">Informações</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Projeto</span>
+            <span>{{ task.project.name|default:"-" }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Responsável</span>
+            <span>{{ task.assigned_to.get_full_name|default:task.assigned_to.username|default:"-" }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Prioridade</span>
+            <span class="fw-semibold">
+              {% if task.priority == 'HIGH' %}Alta{% elif task.priority == 'LOW' %}Baixa{% else %}Média{% endif %}
+            </span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Status</span>
+            <span class="fw-semibold">
+              {% if task.status == 'DONE' %}Concluída{% elif task.status == 'DOING' %}Em andamento{% else %}A fazer{% endif %}
+            </span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Início</span>
+            <span>{{ task.start_date|date:"d/m/Y"|default:"-" }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Fim</span>
+            <span>{{ task.due_date|date:"d/m/Y"|default:"-" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

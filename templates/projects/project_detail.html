@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name }}{% endblock %}
+{% block page_title %}Detalhes do Projeto{% endblock %}
+
+{% block extra_css %}
+<style>
+    .project-tabs {
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 1rem;
+        gap: 0.25rem;
+    }
+    .project-tabs .nav-link {
+        border: 1px solid transparent;
+        border-bottom: 2px solid transparent;
+        color: #6b7280;
+        padding: 0.65rem 1rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+        font-weight: 600;
+    }
+    .project-tabs .nav-link.active {
+        color: #111827;
+        border-color: #e5e7eb;
+        border-bottom-color: #fff;
+        background: #fff;
+        box-shadow: inset 0 -2px 0 #6366f1;
+    }
+    .project-tabs .nav-link:hover {
+        color: #111827;
+        background: #f3f4f6;
+    }
+    .project-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+    .project-field label {
+        display: block;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+    .project-field .value {
+        font-weight: 500;
+    }
+    .project-field.description {
+        grid-column: span 2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <a href="{% url 'projects:project_list' %}" class="btn btn-outline"
+                style="padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+            <h3 style="margin: 0;">{{ project.name }}</h3>
+            <span class="badge badge-info">{{ project.get_status_display }}</span>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                {% if perms.projects.change_project %}
+                <a href="{% url 'projects:project_update' project.pk %}" class="btn btn-outline"
+                    style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+                {% endif %}
+                {% if perms.projects.delete_project %}
+                <form action="{% url 'projects:project_delete' project.pk %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-outline-danger-custom"
+                        onclick="confirmDelete(event, this.closest('form'))">
+                        <i class="fas fa-trash"></i> Excluir
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="card-body" id="topo">
+        {% include "projects/project_base_tabs.html" with active_tab="geral" %}
+
+        <div class="project-grid">
+            <div class="project-field">
+                <label>Nome do Projeto</label>
+                <div class="value">{{ project.name }}</div>
+            </div>
+            <div class="project-field">
+                <label>Gerente</label>
+                <div class="value">
+                    {% if project.project_manager.get_full_name %}
+                    {{ project.project_manager.get_full_name }}
+                    {% elif project.project_manager.username %}
+                    {{ project.project_manager.username }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </div>
+            </div>
+            <div class="project-field">
+                <label>Prazo</label>
+                <div class="value">{{ project.start_date|date:"d/m/Y" }} - {{ project.end_date|date:"d/m/Y" }}</div>
+            </div>
+            <div class="project-field">
+                <label>Orçamento</label>
+                <div class="value">{{ project.currency }} {{ project.budget }}</div>
+            </div>
+            <div class="project-field">
+                <label>Centro de Custo</label>
+                <div class="value">{{ project.cost_center|default:"-" }}</div>
+            </div>
+            <div class="project-field">
+                <label>Indústria</label>
+                <div class="value">{{ project.get_industry_display }}</div>
+            </div>
+            <div class="project-field">
+                <label>Geografia</label>
+                <div class="value">{{ project.get_geography_display }}</div>
+            </div>
+            <div class="project-field">
+                <label>Acesso Externo</label>
+                <div class="value">
+                    {% if project.external_access %}
+                    <span class="badge badge-success">Sim</span>
+                    {% else %}
+                    <span class="badge badge-secondary">Não</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="project-field">
+                <label>Equipe</label>
+                <div class="value">
+                    {% for member in project.team.all %}
+                    {{ member.get_full_name|default:member.username }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                    -
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="project-field description">
+                <label>Descrição</label>
+                <div class="value">{{ project.description }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

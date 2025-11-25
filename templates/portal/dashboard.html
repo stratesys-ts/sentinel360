@@ -1,0 +1,232 @@
+{% extends 'base_portal.html' %}
+
+{% block content %}
+<style>
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+
+    .welcome-text {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .project-subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        transition: transform 0.2s;
+        height: 100%;
+        border-left: 5px solid transparent;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .stat-card.open {
+        border-left-color: #3b82f6;
+    }
+
+    .stat-card.action {
+        border-left-color: #f59e0b;
+    }
+
+    .stat-card.closed {
+        border-left-color: #10b981;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .stat-icon {
+        float: right;
+        font-size: 1.5rem;
+        opacity: 0.2;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 1rem;
+        margin-top: 2rem;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background-color: #f9fafb;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .table tbody td {
+        padding: 1rem 1.5rem;
+        color: #4b5563;
+        vertical-align: middle;
+    }
+
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-open {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-in_progress {
+        background-color: #ffedd5;
+        color: #9a3412;
+    }
+
+    .status-resolved {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-closed {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+
+    .btn-new-ticket {
+        background-color: #0d3c61;
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background-color 0.2s;
+    }
+
+    .btn-new-ticket:hover {
+        background-color: #0a2e4b;
+        color: white;
+    }
+</style>
+
+<div class="dashboard-header d-flex justify-content-between align-items-end">
+    <div>
+        <h1 class="welcome-text">Portal do Cliente</h1>
+        <p class="project-subtitle mb-0">
+            {% if request.user.client_project %}
+            Projeto: {{ request.user.client_project.name }}
+            {% else %}
+            Nenhum projeto vinculado
+            {% endif %}
+        </p>
+    </div>
+    <a href="#" class="btn-new-ticket shadow-sm" style="text-decoration: none;">
+        <i class="fas fa-plus"></i> Abrir Novo Chamado
+    </a>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="stat-card open">
+            <div class="stat-icon text-primary"><i class="fas fa-inbox"></i></div>
+            <div class="stat-label">Chamados Abertos</div>
+            <div class="stat-value">{{ stats.open }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card action">
+            <div class="stat-icon text-warning"><i class="fas fa-clock"></i></div>
+            <div class="stat-label">Em Andamento</div>
+            <div class="stat-value">{{ stats.in_progress }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card closed">
+            <div class="stat-icon text-success"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-label">Encerrados</div>
+            <div class="stat-value">{{ stats.closed }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Tickets Table -->
+<h2 class="section-title">Meus Chamados Recentes</h2>
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Status</th>
+                    <th>Prioridade</th>
+                    <th>Data</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td class="fw-bold">#{{ ticket.id }}</td>
+                    <td>{{ ticket.title }}</td>
+                    <td>
+                        <span class="status-badge status-{{ ticket.status|lower }}">
+                            {{ ticket.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ ticket.get_priority_display }}</td>
+                    <td>{{ ticket.created_at|date:"d/m/Y H:i" }}</td>
+                    <td class="text-end">
+                        <a href="#" class="btn btn-sm btn-light text-primary fw-bold">
+                            Ver Detalhes
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fas fa-folder-open fa-2x mb-3 d-block opacity-25"></i>
+                        Nenhum chamado recente encontrado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
