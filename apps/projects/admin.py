@@ -1,7 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
 
-from .models import CostCenter, Project, Task
+from .models import CostCenter, Project, Issue
 
 @admin.register(CostCenter)
 class CostCenterAdmin(ModelAdmin):
@@ -43,13 +43,13 @@ class ProjectAdmin(ModelAdmin):
     date_hierarchy = 'start_date'
     list_per_page = 25
 
-@admin.register(Task)
-class TaskAdmin(ModelAdmin):
-    list_display = ('title', 'project', 'assigned_to', 'status', 'priority', 'due_date')
-    list_filter = ('status', 'priority', 'project', 'assigned_to')
+@admin.register(Issue)
+class IssueAdmin(ModelAdmin):
+    list_display = ('title', 'issue_type', 'project', 'assigned_to', 'status', 'priority', 'due_date')
+    list_filter = ('issue_type', 'status', 'priority', 'project', 'assigned_to')
     search_fields = ('title', 'description', 'project__name', 'assigned_to__username')
-    autocomplete_fields = ('project', 'assigned_to')
-    list_select_related = ('project', 'assigned_to')
+    autocomplete_fields = ('project', 'assigned_to', 'created_by')
+    list_select_related = ('project', 'assigned_to', 'created_by')
     date_hierarchy = 'due_date'
     ordering = ('-due_date', 'title')
     list_per_page = 50

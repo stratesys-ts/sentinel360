@@ -1,5 +1,5 @@
 from django import forms
-from .models import Project, Task
+from .models import Project, Issue
 
 class ProjectForm(forms.ModelForm):
     class Meta:
@@ -42,10 +42,10 @@ class ProjectForm(forms.ModelForm):
         self.fields['start_date'].input_formats = ['%Y-%m-%d', '%d/%m/%Y']
         self.fields['end_date'].input_formats = ['%Y-%m-%d', '%d/%m/%Y']
 
-class TaskForm(forms.ModelForm):
+class IssueForm(forms.ModelForm):
     class Meta:
-        model = Task
-        fields = ['title', 'description', 'assigned_to', 'status', 'priority', 'due_date']
+        model = Issue
+        fields = ['title', 'description', 'assigned_to', 'status', 'priority', 'due_date', 'issue_type']
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date'}),
             'description': forms.Textarea(attrs={'rows': 3}),
@@ -53,5 +53,7 @@ class TaskForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if 'issue_type' in self.fields:
+            self.fields['issue_type'].initial = Issue.IssueType.TASK
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'

@@ -54,42 +54,54 @@
       </div>
       {% endif %}
 
-      <div class="row g-3">
+            <div class="row g-3">
         <div class="col-md-4">
           <label class="form-label fw-semibold">Tipo <span style="color:#e11d48;">*</span></label>
           <select class="form-select" id="taskType" name="task_type" required aria-required="true">
             <option value="" selected disabled>Selecione</option>
-            <option>Help Desk</option>
-            <option>Tarefa</option>
+            <option value="Help Desk">Help Desk</option>
+            <option value="Tarefa">Tarefa</option>
           </select>
         </div>
         <div class="col-md-4">
-          <label class="form-label fw-semibold">Responsável</label>
-          <select class="form-select" name="assigned_to">
-            <option value="" selected disabled>Selecionar</option>
-            {% for user in internal_users %}
-            <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
-            {% empty %}
-            <option disabled>Sem usu�rios internos</option>
+          <label class="form-label fw-semibold">Prioridade</label>
+          <select class="form-select" name="priority">
+            {% for value,label in priority_choices %}
+            <option value="{{ value }}" {% if value == 'MEDIUM' %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
           </select>
         </div>
         <div class="col-md-4">
-          <label class="form-label fw-semibold">Data Início</label>
+          <label class="form-label fw-semibold">Status</label>
+          <select class="form-select" name="status">
+            {% for value,label in status_choices %}
+            <option value="{{ value }}" {% if value == 'TODO' %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Respons&aacute;vel</label>
+          <select class="form-select" name="assigned_to" id="taskAssignee">
+            <option value="" selected disabled>Selecionar</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Data In&iacute;cio</label>
           <input type="date" class="form-control" id="taskStartDate" name="start_date">
         </div>
         <div class="col-md-4">
           <label class="form-label fw-semibold">Data Fim</label>
           <input type="date" class="form-control" name="due_date">
         </div>
-        <div class="col-md-4"></div>
       </div>
-    </div>
   </div>
   <div class="d-flex justify-content-end mt-3 gap-2">
     <a href="{{ cancel_url }}" class="btn btn-outline">Cancelar</a>
     <button class="btn btn-primary" id="taskSaveBtn" type="submit">Salvar</button>
   </div>
+
+{{ project_members_map|json_script:'projectMembersData' }}
+
 </form>
 
 <!-- Modal de alerta custom -->
@@ -117,31 +129,53 @@
     const titleInput = document.getElementById('taskTitle');
     const typeSelect = document.getElementById('taskType');
     const projectSelect = document.getElementById('taskProject');
+    const assigneeSelect = document.getElementById('taskAssignee');
+    const projectMembersData = document.getElementById('projectMembersData');
+    const projectMembers = projectMembersData ? JSON.parse(projectMembersData.textContent) : {};
     const form = document.getElementById('taskForm');
     const saveBtn = document.getElementById('taskSaveBtn');
     const startDateInput = document.getElementById('taskStartDate');
 
-    // Preenche Data In�cio com a data de hoje, se estiver vazio
+    // Preenche Data In?cio com a data de hoje, se estiver vazio
     if (startDateInput && !startDateInput.value) {
       const today = new Date().toISOString().split('T')[0];
       startDateInput.value = today;
     }
 
+    const populateAssignees = (projectId) => {
+      if (!assigneeSelect) return;
+      assigneeSelect.innerHTML = '<option value="" selected disabled>Selecionar</option>';
+      const members = projectMembers[projectId] || [];
+      members.forEach((m) => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = m.name;
+        assigneeSelect.appendChild(opt);
+      });
+
+    };
+
+    if (projectSelect) {
+      projectSelect.addEventListener('change', (e) => populateAssignees(e.target.value));
+      if (projectSelect.value) {
+        populateAssignees(projectSelect.value);
+      }
+    } else {
+      const hiddenProject = document.querySelector('input[name="project"]');
+      if (hiddenProject && hiddenProject.value) {
+        populateAssignees(hiddenProject.value);
+      }
+    }
+
     if (saveBtn && form) {
       saveBtn.addEventListener('click', (e) => {
         const missing = [];
-        if (!titleInput.value.trim()) {
-          missing.push('T�tulo');
-        }
-        if (!typeSelect.value) {
-          missing.push('Tipo');
-        }
-        if (projectSelect && !projectSelect.value) {
-          missing.push('Projeto');
-        }
+        if (!titleInput.value.trim()) missing.push('T?tulo');
+        if (!typeSelect.value) missing.push('Tipo');
+        if (projectSelect && !projectSelect.value) missing.push('Projeto');
         if (missing.length) {
           e.preventDefault();
-          const msg = 'Preencha os campos obrigatórios: ' + missing.join(', ');
+          const msg = 'Preencha os campos obrigat?rios: ' + missing.join(', ');
           window.scrollTo({ top: 0, behavior: 'smooth' });
           const modalEl = document.getElementById('taskAlertModal');
           const msgEl = document.getElementById('taskAlertMessage');

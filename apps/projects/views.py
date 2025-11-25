@@ -7,8 +7,8 @@ from django.urls import reverse_lazy, reverse
 from django.shortcuts import redirect, get_object_or_404
 from django.db.models import Q, Sum
 from decimal import Decimal
-from .models import Project, Task
-from .forms import ProjectForm, TaskForm
+from .models import Project, Issue
+from .forms import ProjectForm, IssueForm
 from apps.timesheet.models import TimeEntry
 
 
@@ -93,28 +93,30 @@ class ProjectDetailView(LoginRequiredMixin, ProjectAccessMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tasks'] = self.object.tasks.all()
-        context['task_form'] = TaskForm()
+        context['tasks'] = self.object.tasks.filter(issue_type=Issue.IssueType.TASK)
+        context['task_form'] = IssueForm(initial={'issue_type': Issue.IssueType.TASK})
         context['active_tab'] = 'geral'
         return context
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        form = TaskForm(request.POST)
+        form = IssueForm(request.POST)
         if form.is_valid():
             task = form.save(commit=False)
             task.project = self.object
+            task.issue_type = Issue.IssueType.TASK
+            task.created_by = request.user
             task.save()
             return redirect('projects:project_detail', pk=self.object.pk)
         return self.render_to_response(self.get_context_data(task_form=form))
 
 class TaskUpdateView(LoginRequiredMixin, UpdateView):
-    model = Task
+    model = Issue
     fields = ['status']
     template_name = 'projects/task_update_status.html' # Not used directly, usually via AJAX or simple redirect
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related('project')
+        qs = super().get_queryset().select_related('project').filter(issue_type=Issue.IssueType.TASK)
         user = self.request.user
         if user.is_superuser or user.has_perm('projects.change_project'):
             return qs
@@ -133,16 +135,16 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         new_status = request.POST.get('status')
-        if new_status in dict(Task.Status.choices):
+        if new_status in dict(Issue.Status.choices):
             self.object.status = new_status
             self.object.save()
         return redirect('projects:project_detail', pk=self.object.project.pk)
 
 
-class TaskDetailView(LoginRequiredMixin, DetailView):
-    model = Task
+class IssueDetailView(LoginRequiredMixin, DetailView):
+    model = Issue
     template_name = 'projects/task_detail.html'
-    context_object_name = 'task'
+    context_object_name = 'issue'
 
     def get_queryset(self):
         qs = super().get_queryset().select_related('project', 'assigned_to')
@@ -173,6 +175,7 @@ class ProjectTasksView(LoginRequiredMixin, ProjectAccessMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         project = self.get_project()
         context['project'] = project
+        # Exibe todas as issues do projeto, independentemente do tipo
         context['tasks'] = project.tasks.all().select_related('assigned_to')
         context['active_tab'] = 'tarefas'
         return context
@@ -188,9 +191,9 @@ class ProjectKanbanView(LoginRequiredMixin, ProjectAccessMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         project = self.get_project()
         context['project'] = project
-        context['todo_tasks'] = project.tasks.filter(status=Task.Status.TODO)
-        context['doing_tasks'] = project.tasks.filter(status=Task.Status.DOING)
-        context['done_tasks'] = project.tasks.filter(status=Task.Status.DONE)
+        context['todo_tasks'] = project.tasks.filter(issue_type=Issue.IssueType.TASK, status=Issue.Status.TODO)
+        context['doing_tasks'] = project.tasks.filter(issue_type=Issue.IssueType.TASK, status=Issue.Status.DOING)
+        context['done_tasks'] = project.tasks.filter(issue_type=Issue.IssueType.TASK, status=Issue.Status.DONE)
         context['active_tab'] = 'kanban'
         return context
 
@@ -217,14 +220,29 @@ class QuickTaskCreateView(LoginRequiredMixin, TemplateView):
         User = get_user_model()
 
         project_id = self.request.GET.get('project')
-        selected_project = None
-        if project_id:
-            selected_project = Project.objects.filter(pk=project_id).first()
+        selected_project = Project.objects.filter(pk=project_id).first() if project_id else None
 
-        context['projects'] = Project.objects.all().order_by('name')
-        context['internal_users'] = User.objects.filter(is_active=True).exclude(role=User.Role.CLIENT).order_by('username')
+        projects_qs = Project.objects.all().order_by('name').prefetch_related('team', 'project_manager', 'project_owner')
+        context['projects'] = projects_qs
+        project_members = {}
+        for proj in projects_qs:
+            member_ids = set(proj.team.values_list('id', flat=True))
+            if proj.project_manager_id:
+                member_ids.add(proj.project_manager_id)
+            if proj.project_owner_id:
+                member_ids.add(proj.project_owner_id)
+            members = User.objects.filter(id__in=member_ids, is_active=True).order_by('username')
+            project_members[proj.id] = [{"id": m.id, "name": m.get_full_name() or m.username} for m in members]
+        context['project_members_map'] = project_members
+        if selected_project:
+            member_ids = [m['id'] for m in project_members.get(selected_project.id, [])]
+            context['internal_users'] = User.objects.filter(id__in=member_ids).order_by('username')
+        else:
+            context['internal_users'] = User.objects.none()
+        context['status_choices'] = Issue.Status.choices
+        context['priority_choices'] = Issue.Priority.choices
         context['selected_project'] = selected_project
-        # Define para onde o botão Cancelar deve voltar. Prioriza a tela anterior, senão cai no projeto ou dashboard.
+
         referer = self.request.META.get('HTTP_REFERER')
         if referer:
             cancel_url = referer
@@ -240,6 +258,9 @@ class QuickTaskCreateView(LoginRequiredMixin, TemplateView):
         description = request.POST.get('description', '').strip()
         project_id = request.POST.get('project')
         assigned_id = request.POST.get('assigned_to') or None
+        issue_type = request.POST.get('task_type') or Issue.IssueType.TASK
+        status = request.POST.get('status') or Issue.Status.TODO
+        priority = request.POST.get('priority') or Issue.Priority.MEDIUM
         due_date_raw = request.POST.get('due_date')
         start_date_raw = request.POST.get('start_date')
 
@@ -247,14 +268,20 @@ class QuickTaskCreateView(LoginRequiredMixin, TemplateView):
         project = None
 
         if not title:
-            errors.append('Título')
+            errors.append('T?tulo')
 
         if not project_id:
             errors.append('Projeto')
         else:
             project = Project.objects.filter(pk=project_id).first()
             if not project:
-                errors.append('Projeto inválido')
+                errors.append('Projeto inv?lido')
+        if issue_type not in dict(Issue.IssueType.choices):
+            errors.append('Tipo inv?lido')
+        if status not in dict(Issue.Status.choices):
+            errors.append('Status inv?lido')
+        if priority not in dict(Issue.Priority.choices):
+            errors.append('Prioridade inv?lida')
 
         start_date = None
         due_date = None
@@ -262,23 +289,27 @@ class QuickTaskCreateView(LoginRequiredMixin, TemplateView):
             try:
                 start_date = datetime.fromisoformat(start_date_raw).date()
             except ValueError:
-                errors.append('Data Início inválida')
+                errors.append('Data In?cio inv?lida')
         if due_date_raw:
             try:
                 due_date = datetime.fromisoformat(due_date_raw).date()
             except ValueError:
-                errors.append('Data Fim inválida')
+                errors.append('Data Fim inv?lida')
 
         if errors:
             messages.error(request, 'Preencha corretamente: ' + ', '.join(errors))
             return self.get(request, *args, **kwargs)
 
-        task = Task.objects.create(
+        task = Issue.objects.create(
             project=project,
             title=title,
             description=description,
             start_date=start_date,
             due_date=due_date,
+            issue_type=issue_type,
+            created_by=request.user,
+            status=status,
+            priority=priority,
         )
 
         if assigned_id:
@@ -291,15 +322,13 @@ class QuickTaskCreateView(LoginRequiredMixin, TemplateView):
 
         messages.success(request, 'Tarefa criada com sucesso.')
         return redirect('projects:project_tasks', pk=project.pk)
-
-
 class TaskAssignedListView(LoginRequiredMixin, ListView):
-    model = Task
+    model = Issue
     template_name = 'projects/task_assigned_list.html'
     context_object_name = 'tasks'
 
     def get_queryset(self):
-        return Task.objects.filter(assigned_to=self.request.user).order_by('-due_date', 'title')
+        return Issue.objects.filter(issue_type=Issue.IssueType.TASK, assigned_to=self.request.user).order_by('-due_date', 'title')
 
 
 class ProjectHoursView(LoginRequiredMixin, ProjectAccessMixin, ListView):

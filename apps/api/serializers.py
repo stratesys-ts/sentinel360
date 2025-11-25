@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.projects.models import Project, Task
+from apps.projects.models import Project, Issue
 from apps.timesheet.models import TimeEntry, Timesheet, Activity
 
 
@@ -22,10 +22,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         ]
 
 
-class TaskSerializer(serializers.ModelSerializer):
+class IssueSerializer(serializers.ModelSerializer):
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
     assigned_to = serializers.SerializerMethodField()
     assigned_to_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    issue_type = serializers.ChoiceField(choices=Issue.IssueType.choices, default=Issue.IssueType.TASK)
 
     def get_assigned_to(self, obj):
         user = obj.assigned_to
@@ -34,7 +35,7 @@ class TaskSerializer(serializers.ModelSerializer):
         return {"id": user.id, "username": user.username, "email": user.email}
 
     class Meta:
-        model = Task
+        model = Issue
         fields = [
             "id",
             "project",
@@ -44,6 +45,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "priority",
             "start_date",
             "due_date",
+            "issue_type",
             "assigned_to",
             "assigned_to_id",
             "created_at",
@@ -126,8 +128,8 @@ class TimeEntrySerializer(serializers.ModelSerializer):
 
         if task_id:
             try:
-                attrs["task"] = Task.objects.get(id=task_id)
-            except Task.DoesNotExist:
+                attrs["task"] = Issue.objects.get(id=task_id)
+            except Issue.DoesNotExist:
                 raise serializers.ValidationError({"task_id": "Tarefa não encontrada."})
 
         if act_id:

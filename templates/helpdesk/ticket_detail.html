@@ -4,125 +4,74 @@
 
 {% block content %}
 <div class="container-fluid px-0 px-md-2">
+  <div class="mb-3">
+    <a href="{% url 'helpdesk:ticket_list' %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+      <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+  </div>
   <div class="d-flex flex-column flex-lg-row gap-3">
-    <!-- Coluna esquerda -->
     <div class="flex-grow-1 d-flex flex-column gap-3">
       <div class="card shadow-sm border-0">
         <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
           <div class="d-flex flex-column">
-            <h5 class="mb-1">Chamado #{{ ticket.public_id|default:ticket.id }} — {{ ticket.title }}</h5>
-            <small class="text-muted">Aberto por {{ ticket.created_by.get_full_name|default:ticket.created_by.username }} em {{ ticket.created_at|date:"d/m/Y H:i" }}</small>
+            <h5 class="mb-1">Chamado #{{ ticket.public_id|default:ticket.id }} - {{ ticket.title }}</h5>
+            <small class="text-muted">Criado em {{ ticket.created_at|date:"d/m/Y H:i" }}</small>
           </div>
-          {% if perms.helpdesk.change_ticket %}
           <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'helpdesk:ticket_list' %}" class="btn btn-outline d-flex align-items-center gap-2">
+              <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+            {% if perms.helpdesk.change_ticket %}
             <a href="{% url 'helpdesk:ticket_update' ticket.pk %}" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2">
               <i class="fas fa-edit"></i> Editar
             </a>
+            {% endif %}
           </div>
-          {% endif %}
-          <span class="badge {% if ticket.status == 'OPEN' %}bg-warning text-dark{% elif ticket.status == 'RESOLVED' %}bg-success{% else %}bg-info text-dark{% endif %}">
-            {{ ticket.get_status_display }}
+          <span class="badge {% if ticket.status == 'DONE' %}bg-success{% elif ticket.status == 'DOING' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+            {% if ticket.status == 'DONE' %}Concluido{% elif ticket.status == 'DOING' %}Em andamento{% else %}Aberto{% endif %}
           </span>
         </div>
         <div class="card-body">
           <div class="p-3 rounded-3 border bg-light">
-            {{ ticket.description|linebreaks }}
+            {{ ticket.description|linebreaks|default:"Sem descricao." }}
           </div>
-          {% if ticket.attachment %}
-          <div class="mt-3">
-            <a href="{{ ticket.attachment.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
-              <i class="fas fa-paperclip me-2"></i>Ver anexo
-            </a>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- Comentários -->
-      <div class="card shadow-sm border-0">
-        <div class="card-header">
-          <h5 class="mb-0">Histórico & Comentários</h5>
-        </div>
-        <div class="card-body">
-          <div class="d-flex flex-column gap-3 mb-3">
-            {% for comment in comments %}
-            <div class="d-flex gap-3 {% if comment.is_internal %}border border-warning-subtle bg-warning-subtle{% else %}border border-light bg-light{% endif %} rounded-3 p-3">
-              <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle bg-secondary-subtle text-secondary fw-bold" style="width: 42px; height: 42px;">
-                {{ comment.author.username|make_list|first|upper }}
-              </div>
-              <div class="flex-grow-1">
-                <div class="d-flex justify-content-between align-items-center">
-                  <strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong>
-                  <small class="text-muted">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
-                </div>
-                {% if comment.is_internal %}
-                <div class="text-warning fw-semibold small mb-1">Nota Interna</div>
-                {% endif %}
-                <div class="text-body">{{ comment.content|linebreaks }}</div>
-                {% if comment.attachment %}
-                <div class="mt-2">
-                  <a href="{{ comment.attachment.url }}" target="_blank" class="text-primary"><i class="fas fa-paperclip me-1"></i>Anexo</a>
-                </div>
-                {% endif %}
-              </div>
-            </div>
-            {% empty %}
-            <p class="text-center text-muted my-4">Nenhum comentário ainda.</p>
-            {% endfor %}
-          </div>
-
-          <!-- Formulário de comentário -->
-          <form method="post" enctype="multipart/form-data" class="border-top pt-3">
-            {% csrf_token %}
-            <div class="mb-2">
-              <label class="form-label mb-1">Adicionar Comentário</label>
-              {{ comment_form.content }}
-            </div>
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
-              <div class="d-flex flex-wrap align-items-center gap-2">
-                {{ comment_form.attachment }}
-                {% if user.is_manager or user.is_superuser %}
-                <div class="form-check ms-1">
-                  {{ comment_form.is_internal }}
-                  <label class="form-check-label" for="{{ comment_form.is_internal.id_for_label }}">Interno?</label>
-                </div>
-                {% endif %}
-              </div>
-              <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
-                <i class="fas fa-paper-plane"></i> Enviar
-              </button>
-            </div>
-          </form>
         </div>
       </div>
     </div>
 
-    <!-- Coluna direita -->
     <div class="flex-shrink-0" style="min-width: 320px;">
-        <div class="card shadow-sm border-0">
-          <div class="card-header">
-            <h6 class="mb-0 text-uppercase text-muted" style="letter-spacing: 0.5px;">Informações</h6>
-          </div>
-          <div class="card-body">
+      <div class="card shadow-sm border-0">
+        <div class="card-header">
+          <h6 class="mb-0 text-uppercase text-muted" style="letter-spacing: 0.5px;">Informacoes</h6>
+        </div>
+        <div class="card-body">
           <div class="d-flex justify-content-between mb-2">
             <span class="text-muted">Projeto</span>
             <span>{{ ticket.project.name|default:"-" }}</span>
           </div>
           <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Responsavel</span>
+            <span>{{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.username|default:"-" }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
             <span class="text-muted">Prioridade</span>
-            <span class="fw-semibold">{{ ticket.get_priority_display }}</span>
+            <span class="fw-semibold">
+              {% if ticket.priority == 'HIGH' %}Alta{% elif ticket.priority == 'LOW' %}Baixa{% else %}Media{% endif %}
+            </span>
           </div>
           <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Categoria</span>
-            <span>{{ ticket.category.name|default:"-" }}</span>
+            <span class="text-muted">Status</span>
+            <span class="fw-semibold">
+              {% if ticket.status == 'DONE' %}Concluido{% elif ticket.status == 'DOING' %}Em andamento{% else %}Aberto{% endif %}
+            </span>
           </div>
           <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Responsável</span>
-            <span>{{ ticket.assigned_to.get_full_name|default:"Não atribuído" }}</span>
+            <span class="text-muted">Inicio</span>
+            <span>{{ ticket.start_date|date:"d/m/Y"|default:"-" }}</span>
           </div>
           <div class="d-flex justify-content-between">
-            <span class="text-muted">SLA</span>
-            <span>{{ ticket.category.sla_hours|default:"-" }}h</span>
+            <span class="text-muted">Fim</span>
+            <span>{{ ticket.due_date|date:"d/m/Y"|default:"-" }}</span>
           </div>
         </div>
       </div>

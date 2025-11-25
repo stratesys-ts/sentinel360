@@ -9,7 +9,7 @@ class IntegrationApp(models.Model):
     name = models.CharField(max_length=150, unique=True)
     api_key = models.CharField(max_length=64, unique=True, editable=False)
     is_active = models.BooleanField(default=True)
-    scopes = models.JSONField(default=list, blank=True, help_text="Lista de escopos permitidos (ex.: projects:read, tasks:write)")
+    scopes = models.JSONField(default=list, blank=True, help_text="Lista de escopos permitidos (ex.: projects:read, issues:write)")
     created_at = models.DateTimeField(default=timezone.now, editable=False)
 
     class Meta:
@@ -28,8 +28,8 @@ class IntegrationApp(models.Model):
 class WebhookSubscription(models.Model):
     """Inscrição de webhook para eventos de integração."""
     EVENT_CHOICES = [
-        ("task.created", "task.created"),
-        ("task.updated", "task.updated"),
+        ("issue.created", "issue.created"),
+        ("issue.updated", "issue.updated"),
         ("timeentry.created", "timeentry.created"),
         ("timeentry.updated", "timeentry.updated"),
     ]

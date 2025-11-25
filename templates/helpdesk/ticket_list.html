@@ -17,11 +17,13 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Título</th>
+                    <th>Titulo</th>
                     <th>Prioridade</th>
                     <th>Status</th>
-                    <th>Categoria</th>
+                    <th>Projeto</th>
+                    <th>Tipo</th>
                     <th>Data</th>
+                    <th style="width: 110px; text-align:center;">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -31,33 +33,53 @@
                             style="color: var(--primary-color); font-weight: 600;">#{{ ticket.public_id|default:ticket.id }}</a></td>
                     <td>{{ ticket.title }}</td>
                     <td>
-                        {% if ticket.priority == 'CRITICAL' %}
-                        <span class="badge badge-danger">Crítico</span>
-                        {% elif ticket.priority == 'HIGH' %}
-                        <span class="badge badge-warning">Alta</span>
-                        {% elif ticket.priority == 'MEDIUM' %}
-                        <span class="badge badge-info">Média</span>
-                        {% else %}
+                        {% if ticket.priority == 'HIGH' %}
+                        <span class="badge badge-danger">Alta</span>
+                        {% elif ticket.priority == 'LOW' %}
                         <span class="badge badge-success">Baixa</span>
+                        {% else %}
+                        <span class="badge badge-info">Média</span>
                         {% endif %}
                     </td>
                     <td>
-                        {% if ticket.status == 'OPEN' %}
-                        <span class="badge badge-warning">Aberto</span>
-                        {% elif ticket.status == 'IN_PROGRESS' %}
-                        <span class="badge badge-info">Em Atendimento</span>
-                        {% elif ticket.status == 'RESOLVED' %}
-                        <span class="badge badge-success">Resolvido</span>
+                        {% if ticket.status == 'DONE' %}
+                        <span class="badge badge-success">Concluído</span>
+                        {% elif ticket.status == 'DOING' %}
+                        <span class="badge badge-info">Em andamento</span>
                         {% else %}
-                        <span class="badge badge-secondary">Fechado</span>
+                        <span class="badge badge-secondary">A fazer</span>
                         {% endif %}
                     </td>
-                    <td>{{ ticket.category.name|default:"-" }}</td>
+                    <td>{{ ticket.project.name|default:"-" }}</td>
+                    <td>{{ ticket.issue_type }}</td>
                     <td>{{ ticket.created_at|date:"d/m/Y H:i" }}</td>
+                    <td class="text-nowrap" style="text-align:center;">
+                        <a href="{% url 'helpdesk:ticket_detail' ticket.pk %}" title="Detalhes"
+                           style="color: var(--primary-color); margin-right:0.6rem; font-size:1.05rem;">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                        {% if perms.helpdesk.change_ticket %}
+                        <a href="{% url 'helpdesk:ticket_update' ticket.pk %}" title="Editar"
+                           style="color:#674ea7; margin-right:0.6rem; font-size:1.05rem;">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        {% endif %}
+                        {% if perms.helpdesk.delete_ticket %}
+                        <form action="{% url 'helpdesk:ticket_update' ticket.pk %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <button type="submit" title="Excluir"
+                                style="background:none;border:none;color:#d9534f;font-size:1.05rem;cursor:pointer;padding:0 0.2rem;"
+                                onclick="return confirm('Excluir este ticket?');">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" style="text-align: center; color: #64748b;">Nenhum chamado encontrado.</td>
+                    <td colspan="8" style="text-align: center; color: #64748b;">Nenhum chamado encontrado.</td>
                 </tr>
                 {% endfor %}
             </tbody>
