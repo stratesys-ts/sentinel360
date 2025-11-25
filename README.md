@@ -92,3 +92,72 @@ A complete ERP system featuring Help Desk, Timesheet, and Project Management mod
 - `apps/helpdesk`: Ticket System
 - `apps/timesheet`: Time Tracking
 - `apps/projects`: Project Management
+
+
+
+
+# 🚀 Guia de Onboarding para Novos Colaboradores
+
+Este guia explica exatamente os passos que um novo colaborador deve seguir para rodar o projeto **Sentinel360 (ERP Django)** localmente e trabalhar de forma colaborativa usando Git.
+
+## ✅ 1. Clonar o repositório
+```bash
+git clone https://github.com/stratesys-ts/sentinel360.git
+cd sentinel360
+```
+
+## ✅ 2. Criar e ativar a Virtual Environment
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+## ✅ 3. Instalar dependências
+```bash
+pip install -r requirements.txt
+```
+
+## ✅ 4. Rodar migrações
+```bash
+python manage.py migrate
+```
+
+## ✅ 5. Iniciar o servidor
+```bash
+python manage.py runserver
+```
+
+Acesse: http://127.0.0.1:8000
+
+## 🎯 6. Fluxo de trabalho com Git
+**Antes de trabalhar:**
+```bash
+git pull origin main
+```
+
+**Para enviar alterações:**
+```bash
+git add .
+git commit -m "Descrição"
+git push origin main
+```
+
+## 🧽 7. Se o código estiver desatualizado
+```bash
+git fetch origin
+git checkout main
+git reset --hard origin/main
+```
+
+## 🆘 8. Problemas comuns
+
+### ModuleNotFoundError
+```bash
+pip install -r requirements.txt
+```
+
+### Erro ao rodar runserver
+```bash
+.venv\Scripts\activate
+python manage.py migrate
+```
