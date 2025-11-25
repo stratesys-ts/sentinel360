@@ -69,7 +69,7 @@ from .models import InternalUser, ExternalUser
 
 @admin.register(InternalUser)
 class InternalUserAdmin(UserAdmin):
-    actions = None
+    actions = ['delete_selected']
     fieldsets = (
         (_('Credenciais'), {'fields': ('username', 'password')}),
         (_('Informações pessoais'), {'fields': ('first_name', 'last_name', 'email')}),
@@ -122,7 +122,7 @@ class InternalUserAdmin(UserAdmin):
 
 @admin.register(ExternalUser)
 class ExternalUserAdmin(UserAdmin):
-    actions = None
+    actions = ['delete_selected']
     fieldsets = (
         (_('Credenciais'), {'fields': ('username', 'password')}),
         (_('Informações pessoais'), {'fields': ('first_name', 'last_name', 'email')}),

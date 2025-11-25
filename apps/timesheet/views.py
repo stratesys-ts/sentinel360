@@ -255,6 +255,16 @@ class TimesheetActionView(LoginRequiredMixin, UpdateView):
         timesheet = self.get_object()
         action = request.POST.get('action')
         allowed_project_ids = set(self._assignable_projects(request.user).values_list('id', flat=True))
+
+        def redirect_back():
+            next_url = request.POST.get('next') or request.GET.get('next') or ''
+            referer = request.META.get('HTTP_REFERER', '')
+            host = request.get_host()
+            if next_url and url_has_allowed_host_and_scheme(next_url, {host}):
+                return redirect(next_url)
+            if 'timesheet/approvals' in referer and url_has_allowed_host_and_scheme(referer, {host}):
+                return redirect(referer)
+            return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
         
         print(f"DEBUG: TimesheetActionView.post called. Action: {action}, User: {request.user}")
         print(f"DEBUG: Entries BEFORE: {TimeEntry.objects.filter(timesheet=timesheet).count()}")
@@ -271,7 +281,7 @@ class TimesheetActionView(LoginRequiredMixin, UpdateView):
             total_hours = timesheet.entries.aggregate(total=models.Sum('hours'))['total'] or 0
             if total_hours == 0:
                 messages.error(request, 'Não é possível enviar uma folha de ponto sem horas lançadas.')
-                return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+                return redirect_back()
                 
             timesheet.status = Timesheet.Status.SUBMITTED
             timesheet.partial_approvers.clear()
@@ -280,12 +290,12 @@ class TimesheetActionView(LoginRequiredMixin, UpdateView):
         elif action == 'approve':
             if timesheet.user == request.user:
                 messages.error(request, 'Você não pode aprovar a própria folha. Solicite a aprovação de outro usuário.')
-                return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+                return redirect_back()
             is_manager = request.user.role == getattr(request.user, 'Role', None).MANAGER
             has_scope = timesheet.entries.filter(project__project_manager=request.user).exists()
             if is_manager and not has_scope and not (request.user.has_perm('timesheet.change_timesheet') or request.user.is_superuser):
                 messages.error(request, 'Você não tem permissão para aprovar esta folha.')
-                return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+                return redirect_back()
 
             if request.user.has_perm('timesheet.change_timesheet') or request.user.is_superuser:
                 timesheet.status = Timesheet.Status.APPROVED
@@ -310,12 +320,12 @@ class TimesheetActionView(LoginRequiredMixin, UpdateView):
         elif action == 'reject':
             if timesheet.user == request.user:
                 messages.error(request, 'Você não pode rejeitar a própria folha. Solicite a aprovação de outro usuário.')
-                return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+                return redirect_back()
             is_manager = request.user.role == getattr(request.user, 'Role', None).MANAGER
             has_scope = timesheet.entries.filter(project__project_manager=request.user).exists()
             if not (request.user.has_perm('timesheet.change_timesheet') or request.user.is_superuser or (is_manager and has_scope)):
                 messages.error(request, 'Você não tem permissão para rejeitar esta folha.')
-                return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+                return redirect_back()
 
             if request.user.role == getattr(request.user, 'Role', None).MANAGER or request.user.has_perm('timesheet.change_timesheet') or request.user.is_superuser:
                 timesheet.status = Timesheet.Status.REJECTED
@@ -328,10 +338,10 @@ class TimesheetActionView(LoginRequiredMixin, UpdateView):
         elif action == 'cancel':
             if timesheet.status not in [Timesheet.Status.SUBMITTED, Timesheet.Status.PARTIALLY_APPROVED]:
                 messages.error(request, 'Apenas folhas enviadas podem ser canceladas.')
-                return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+                return redirect_back()
             if request.user != timesheet.user and not (request.user.has_perm('timesheet.change_timesheet') or request.user.is_superuser):
                 messages.error(request, 'Você não tem permissão para cancelar esta folha.')
-                return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+                return redirect_back()
             timesheet.status = Timesheet.Status.DRAFT
             timesheet.approved_by = None
             timesheet.rejection_reason = ''
@@ -340,14 +350,14 @@ class TimesheetActionView(LoginRequiredMixin, UpdateView):
             messages.success(request, 'Envio cancelado. Folha retornou para rascunho.')
         elif action == 'add_row':
             if not is_editable:
-                return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+                return redirect_back()
             project_id = request.POST.get('project')
             task_id = request.POST.get('task') or None
             activity_id = request.POST.get('activity')
 
             if project_id and int(project_id) not in allowed_project_ids:
                 messages.error(request, 'Não é possível apontar horas para um projeto não elegível (completo ou sem acesso).')
-                return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+                return redirect_back()
             
             # Create an initial entry for the start date to ensure the row appears
             TimeEntry.objects.create(
@@ -360,7 +370,7 @@ class TimesheetActionView(LoginRequiredMixin, UpdateView):
             )
         elif action == 'delete_row':
             if not is_editable:
-                return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+                return redirect_back()
             project_id = request.POST.get('project_id')
             task_id = request.POST.get('task_id') or None
             activity_id = request.POST.get('activity_id')
@@ -374,7 +384,7 @@ class TimesheetActionView(LoginRequiredMixin, UpdateView):
             ).delete()
         elif action == 'save_grid':
             if not is_editable:
-                return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+                return redirect_back()
             
             from django.db import transaction
             import logging
@@ -466,7 +476,7 @@ class TimesheetActionView(LoginRequiredMixin, UpdateView):
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'multipart/form-data':
                 return JsonResponse({'status': 'success', 'message': 'Hours saved successfully'})
 
-        return redirect('timesheet:timesheet_detail', pk=timesheet.pk)
+        return redirect_back()
 
 class TimeEntryListView(LoginRequiredMixin, ListView):
     model = TimeEntry

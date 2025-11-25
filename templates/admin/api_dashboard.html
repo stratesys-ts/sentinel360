@@ -51,6 +51,11 @@
   .endpoint-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
   .endpoint { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   .endpoint .method { font-weight: 700; color: #00446d; background: #e0ecf5; padding: 3px 6px; border-radius: 6px; min-width: 46px; text-align: center; }
+  .scope-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .scope-tag { background: #eef2ff; color: #312e81; padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+  .links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 14px; }
+  .links-grid a { text-decoration: none; color: #00446d; font-weight: 700; }
+  .code-block { background: #0f172a; color: #e5e7eb; border-radius: 10px; padding: 10px 12px; font-family: Consolas, monospace; font-size: 12px; white-space: pre; overflow-x: auto; }
 </style>
 
 <div class="api-hero">
@@ -99,6 +104,46 @@
     </li>
     {% endfor %}
   </ul>
+</div>
+
+<div class="box" style="margin-top:10px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px 14px;">
+  <h6>Escopos sugeridos</h6>
+  <div class="scope-list">
+    <span class="scope-tag">projects:read</span>
+    <span class="scope-tag">tasks:read</span>
+    <span class="scope-tag">tasks:write</span>
+    <span class="scope-tag">timeentries:read</span>
+    <span class="scope-tag">timeentries:write</span>
+  </div>
+  <p class="text-muted" style="margin:8px 0 0; font-size:12px;">Defina os escopos na Aplicação de Integração para limitar acesso.</p>
+</div>
+
+<div class="links-grid">
+  <div class="box">
+    <h6>Gerenciar chaves</h6>
+    <a href="{% url 'admin:api_integrationapp_changelist' %}" target="_self">Aplicações de Integração →</a>
+  </div>
+  <div class="box">
+    <h6>Webhooks</h6>
+    <a href="{% url 'admin:api_webhooksubscription_changelist' %}" target="_self">Inscrições de Webhook →</a>
+  </div>
+  <div class="box">
+    <h6>Logs de requisição</h6>
+    <a href="{% url 'admin:api_apirequestlog_changelist' %}" target="_self">Ver auditoria →</a>
+  </div>
+  <div class="box">
+    <h6>Logs de Webhook</h6>
+    <a href="{% url 'admin:api_webhookdeliverylog_changelist' %}" target="_self">Entregas →</a>
+  </div>
+</div>
+
+<div class="box" style="margin-top:14px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px 14px;">
+  <h6>Exemplo de chamada (curl)</h6>
+  <div class="code-block">
+curl -H "X-API-Key: SUA_CHAVE" \
+     {{ base_url }}v1/tasks/
+  </div>
+  <p class="text-muted" style="margin:8px 0 0; font-size:12px;">Taxa padrão: 100 requisições/min por chave. Ajuste sob demanda.</p>
 </div>
 
 <div class="api-grid">
