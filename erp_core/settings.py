@@ -63,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.api.middleware.ApiRequestLogMiddleware',
 ]
 
 ROOT_URLCONF = 'erp_core.urls'
@@ -250,6 +251,32 @@ UNFOLD = {
                     },
                 ],
             },
+            {
+                "title": "API",
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Aplicações de Integração",
+                        "icon": "key",
+                        "link": reverse_lazy("admin:api_integrationapp_changelist"),
+                    },
+                    {
+                        "title": "Webhooks",
+                        "icon": "share",
+                        "link": reverse_lazy("admin:api_webhooksubscription_changelist"),
+                    },
+                    {
+                        "title": "Logs de Requisição",
+                        "icon": "rule_folder",
+                        "link": reverse_lazy("admin:api_apirequestlog_changelist"),
+                    },
+                    {
+                        "title": "Entregas de Webhook",
+                        "icon": "receipt_long",
+                        "link": reverse_lazy("admin:api_webhookdeliverylog_changelist"),
+                    },
+                ],
+            },
         ],
     },
     "COMMAND": {
@@ -280,5 +307,13 @@ LOGGING = {
             'propagate': False,
         },
     },
+}
+
+# REST Framework settings
+REST_FRAMEWORK = {
+    "DEFAULT_THROTTLE_CLASSES": ["apps.api.throttling.APIKeyRateThrottle"],
+    "DEFAULT_THROTTLE_RATES": {"api": "100/min"},
+    "DEFAULT_PERMISSION_CLASSES": [],
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
 }
 
