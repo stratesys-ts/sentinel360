@@ -28,6 +28,17 @@
       color: #111827;
       background: #f3f4f6;
   }
+  /* Improve badge contrast for priority/status */
+  .badge {
+      font-weight: 600;
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+  }
+  .badge-danger { background: #fde8e8; color: #9b1c1c; }
+  .badge-info { background: #e0f2fe; color: #0f3e68; }
+  .badge-secondary { background: #f4f5f7; color: #374151; }
+  .badge-success { background: #def7ec; color: #0f5132; }
 </style>
 {% endblock %}
 
@@ -78,13 +89,18 @@
           <th>Status</th>
           <th>Data Inicio</th>
           <th>Data Fim</th>
+          <th style="text-align:center; width:110px;">Acoes</th>
         </tr>
       </thead>
       <tbody>
         {% if tasks %}
           {% for task in tasks %}
             <tr>
-              <td>#{{ task.public_id|default:task.id }}</td>
+              <td>
+                <a href="{% url 'projects:task_edit' task.id %}" style="color: var(--primary-color); font-weight: 600;">
+                  #{{ task.public_id|default:task.id }}
+                </a>
+              </td>
               <td>{{ task.title }}</td>
               <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username|default:"-" }}</td>
               <td>
@@ -107,6 +123,24 @@
               </td>
               <td>{{ task.start_date|date:"d/m/Y"|default:"-" }}</td>
               <td>{% if task.due_date %}{{ task.due_date|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+              <td style="text-align:center;" class="text-nowrap">
+                <a href="{% url 'projects:task_edit' task.id %}" title="Editar"
+                   style="color:#674ea7; margin-right:0.7rem; font-size:1.1rem;">
+                  <i class="fas fa-edit"></i>
+                </a>
+                {% if perms.projects.delete_task %}
+                <form action="{% url 'projects:task_update' task.id %}" method="post" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="redirect_to" value="{{ request.get_full_path }}">
+                  <button type="submit" title="Excluir"
+                    style="background:none;border:none;color:#d9534f;font-size:1.1rem;cursor:pointer;padding:0 0.2rem;"
+                    onclick="return confirmDelete(event, this.form);">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </form>
+                {% endif %}
+              </td>
             </tr>
           {% endfor %}
         {% else %}

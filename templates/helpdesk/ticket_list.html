@@ -23,7 +23,7 @@
                     <th>Projeto</th>
                     <th>Tipo</th>
                     <th>Data</th>
-                    <th style="width: 110px; text-align:center;">Ações</th>
+                    <th style="width: 110px; text-align:center;">Acoes</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,16 +38,16 @@
                         {% elif ticket.priority == 'LOW' %}
                         <span class="badge badge-success">Baixa</span>
                         {% else %}
-                        <span class="badge badge-info">Média</span>
+                        <span class="badge badge-info" style="background:#e0f2fe; color:#0f3e68;">Media</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if ticket.status == 'DONE' %}
-                        <span class="badge badge-success">Concluído</span>
+                        <span class="badge badge-success" style="background:#def7ec; color:#0f5132;">Concluido</span>
                         {% elif ticket.status == 'DOING' %}
-                        <span class="badge badge-info">Em andamento</span>
+                        <span class="badge badge-info" style="background:#e0f2fe; color:#0f3e68;">Em andamento</span>
                         {% else %}
-                        <span class="badge badge-secondary">A fazer</span>
+                        <span class="badge badge-secondary" style="background:#f4f5f7; color:#374151;">A fazer</span>
                         {% endif %}
                     </td>
                     <td>{{ ticket.project.name|default:"-" }}</td>

@@ -134,11 +134,30 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+        project_pk = getattr(self.object, 'project_id', None)
+        redirect_to = request.POST.get('redirect_to')
+        action = request.POST.get('action')
+
+        if action == 'delete':
+            if request.user.has_perm('projects.delete_task') or request.user.is_superuser:
+                self.object.delete()
+            # Always go back to the originating page or the project tasks list
+            if redirect_to:
+                return redirect(redirect_to)
+            if project_pk:
+                return redirect('projects:project_tasks', pk=project_pk)
+            return redirect('projects:task_list_assigned')
+
         new_status = request.POST.get('status')
         if new_status in dict(Issue.Status.choices):
             self.object.status = new_status
             self.object.save()
-        return redirect('projects:project_detail', pk=self.object.project.pk)
+
+        if redirect_to:
+            return redirect(redirect_to)
+        if project_pk:
+            return redirect('projects:project_detail', pk=project_pk)
+        return redirect('projects:task_list_assigned')
 
 
 class IssueDetailView(LoginRequiredMixin, DetailView):
@@ -163,6 +182,41 @@ class IssueDetailView(LoginRequiredMixin, DetailView):
             Q(project__project_owner=user) |
             Q(assigned_to=user)
         )
+
+class IssueUpdateView(LoginRequiredMixin, UpdateView):
+    model = Issue
+    form_class = IssueForm
+    template_name = 'projects/task_form.html'
+    context_object_name = 'task'
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related('project', 'assigned_to')
+        user = self.request.user
+        if user.is_superuser or user.has_perm('projects.change_project'):
+            return qs
+        if getattr(user, 'role', None) == user.Role.CLIENT:
+            return qs.filter(
+                project__external_access=True
+            ).filter(
+                Q(project__client=user) | Q(project__team=user)
+            )
+        return qs.filter(
+            Q(project__team=user) |
+            Q(project__project_manager=user) |
+            Q(project__project_owner=user) |
+            Q(assigned_to=user)
+        )
+
+    def get_success_url(self):
+        if self.object.project_id:
+            return reverse('projects:project_tasks', kwargs={'pk': self.object.project_id})
+        return reverse('projects:task_list_assigned')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['project'] = getattr(self.object, 'project', None)
+        context['active_tab'] = 'tarefas'
+        return context
 
 
 class ProjectTasksView(LoginRequiredMixin, ProjectAccessMixin, TemplateView):
