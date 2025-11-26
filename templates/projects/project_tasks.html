@@ -71,8 +71,11 @@
     <table class="table mb-0">
       <thead>
         <tr>
+          <th style="width: 80px;">ID</th>
           <th>Titulo</th>
           <th>Responsavel</th>
+          <th>Prioridade</th>
+          <th>Status</th>
           <th>Data Inicio</th>
           <th>Data Fim</th>
         </tr>
@@ -81,8 +84,27 @@
         {% if tasks %}
           {% for task in tasks %}
             <tr>
+              <td>#{{ task.public_id|default:task.id }}</td>
               <td>{{ task.title }}</td>
               <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username|default:"-" }}</td>
+              <td>
+                {% if task.priority == 'HIGH' %}
+                  <span class="badge badge-danger">Alta</span>
+                {% elif task.priority == 'LOW' %}
+                  <span class="badge badge-secondary">Baixa</span>
+                {% else %}
+                  <span class="badge badge-info">Média</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if task.status == 'DONE' %}
+                  <span class="badge badge-success">Concluída</span>
+                {% elif task.status == 'DOING' %}
+                  <span class="badge badge-info">Em andamento</span>
+                {% else %}
+                  <span class="badge badge-secondary">A fazer</span>
+                {% endif %}
+              </td>
               <td>{{ task.start_date|date:"d/m/Y"|default:"-" }}</td>
               <td>{% if task.due_date %}{{ task.due_date|date:"d/m/Y" }}{% else %}-{% endif %}</td>
             </tr>

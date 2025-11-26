@@ -205,7 +205,7 @@ UNFOLD = {
                     {
                         "title": "Tarefas",
                         "icon": "task_alt",
-                        "link": reverse_lazy("admin:projects_task_changelist"),
+                        "link": reverse_lazy("admin:projects_issue_changelist"),
                     },
                     {
                         "title": "Centros de custo",

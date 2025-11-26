@@ -7,9 +7,6 @@
 <div class="card">
   <div class="card-header d-flex align-items-center justify-content-between">
     <h3 class="mb-0">Minhas Tarefas</h3>
-    <a href="{% url 'projects:task_quick_create' %}" class="btn btn-primary" style="padding:0.4rem 1.1rem;font-size:1rem;">
-      <i class="fas fa-plus me-2"></i> Nova Tarefa
-    </a>
   </div>
   <div class="table-container">
     <table class="table mb-0">
@@ -22,6 +19,7 @@
           <th>Status</th>
           <th>Início</th>
           <th>Fim</th>
+          <th style="text-align:center; width:110px;">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -52,10 +50,27 @@
           </td>
           <td>{{ task.start_date|date:"d/m/Y"|default:"-" }}</td>
           <td>{{ task.due_date|date:"d/m/Y"|default:"-" }}</td>
+          <td style="text-align:center;" class="text-nowrap">
+            <a href="{% url 'projects:task_detail' task.id %}" title="Detalhes"
+               style="color: var(--primary-color); margin-right:0.6rem; font-size:1.05rem;">
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+            {% if perms.projects.delete_task %}
+            <form action="{% url 'projects:task_update' task.id %}" method="post" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete">
+              <button type="submit" title="Excluir"
+                style="background:none;border:none;color:#d9534f;font-size:1.05rem;cursor:pointer;padding:0 0.2rem;"
+                onclick="return confirmDelete(event, this.form);">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </form>
+            {% endif %}
+          </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7" class="text-center text-muted py-4">Nenhuma tarefa atribuída.</td>
+          <td colspan="8" class="text-center text-muted py-4">Nenhuma tarefa atribuída.</td>
         </tr>
         {% endfor %}
       </tbody>

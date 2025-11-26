@@ -80,7 +80,7 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
-class Task(models.Model):
+class Issue(models.Model):
     class Status(models.TextChoices):
         TODO = 'TODO', _('To Do')
         DOING = 'DOING', _('Doing')
@@ -91,14 +91,20 @@ class Task(models.Model):
         MEDIUM = 'MEDIUM', _('Medium')
         HIGH = 'HIGH', _('High')
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
+    class IssueType(models.TextChoices):
+        HELP_DESK = 'Help Desk', _('Help Desk')
+        TASK = 'Tarefa', _('Tarefa')
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_issues')
+    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_issues')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.TODO)
     priority = models.CharField(max_length=20, choices=Priority.choices, default=Priority.MEDIUM)
     start_date = models.DateField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
+    issue_type = models.CharField(max_length=20, choices=IssueType.choices, default=IssueType.TASK)
     public_id = models.PositiveIntegerField(unique=True, null=True, editable=False)
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -110,6 +116,6 @@ class Task(models.Model):
     def save(self, *args, **kwargs):
         if self.public_id is None:
             with transaction.atomic():
-                last = Task.objects.aggregate(models.Max('public_id'))['public_id__max'] or 0
+                last = Issue.objects.aggregate(models.Max('public_id'))['public_id__max'] or 0
                 self.public_id = last + 1
         return super().save(*args, **kwargs)

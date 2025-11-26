@@ -12,7 +12,7 @@ from .views import (
     ProjectRisksView,
     QuickTaskCreateView,
     TaskAssignedListView,
-    TaskDetailView,
+    IssueDetailView,
 )
 
 app_name = 'projects'
@@ -27,7 +27,8 @@ urlpatterns = [
     path('<int:pk>/hours/', ProjectHoursView.as_view(), name='project_hours'),
     path('<int:pk>/edit/', ProjectUpdateView.as_view(), name='project_update'),
     path('<int:pk>/delete/', ProjectDeleteView.as_view(), name='project_delete'),
-    path('task/<int:pk>/', TaskDetailView.as_view(), name='task_detail'),
+    path('task/<int:pk>/', IssueDetailView.as_view(), name='task_detail'),
+    path('issues/<int:pk>/', IssueDetailView.as_view(), name='issue_detail'),
     path('task/<int:pk>/update/', TaskUpdateView.as_view(), name='task_update'),
     path('tasks/new/', QuickTaskCreateView.as_view(), name='task_quick_create'),
     path('tasks/', TaskAssignedListView.as_view(), name='task_list_assigned'),

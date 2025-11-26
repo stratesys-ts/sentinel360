@@ -44,7 +44,7 @@ class Timesheet(models.Model):
 class TimeEntry(models.Model):
     timesheet = models.ForeignKey(Timesheet, on_delete=models.CASCADE, related_name='entries', null=True, blank=True)
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='time_entries', null=True, blank=True)
-    task = models.ForeignKey('projects.Task', on_delete=models.SET_NULL, null=True, blank=True, related_name='time_entries')
+    task = models.ForeignKey('projects.Issue', on_delete=models.SET_NULL, null=True, blank=True, related_name='time_entries')
     activity = models.ForeignKey(Activity, on_delete=models.SET_NULL, null=True, blank=True)
     
     date = models.DateField()

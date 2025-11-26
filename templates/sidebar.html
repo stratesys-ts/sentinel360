@@ -1,24 +1,25 @@
 <aside class="sidebar d-flex flex-column bg-white">
   <nav class="sidebar-nav flex-grow-1 mt-3">
+    {% with url_name=request.resolver_match.url_name %}
     <a href="{% url 'core:dashboard' %}"
-      class="nav-item nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      class="nav-item nav-link {% if url_name == 'dashboard' %}active{% endif %}">
       <i class="fas fa-th-large fa-fw"></i>
       <span class="nav-text">Dashboard</span>
     </a>
     {% if module_access.helpdesk %}
       <a href="{% url 'helpdesk:ticket_list' %}"
-        class="nav-item nav-link {% if 'helpdesk' in request.path %}active{% endif %}">
+        class="nav-item nav-link {% if 'issues/helpdesk' in request.path %}active{% endif %}">
         <i class="fas fa-headset fa-fw"></i>
         <span class="nav-text">Help Desk</span>
       </a>
     {% endif %}
     <a href="{% url 'projects:project_list' %}"
-      class="nav-item nav-link {% if request.resolver_match.url_name in 'project_list project_detail project_update project_kanban project_risks project_hours project_tasks project_create project_delete' %}active{% endif %}">
+      class="nav-item nav-link {% if url_name in 'project_list project_detail project_update project_risks project_hours project_create project_delete' %}active{% endif %}">
       <i class="fas fa-hourglass-half fa-fw"></i>
       <span class="nav-text">Projetos</span>
     </a>
     <a href="{% url 'projects:task_list_assigned' %}"
-      class="nav-item nav-link {% if request.resolver_match.url_name == 'task_list_assigned' %}active{% endif %}">
+      class="nav-item nav-link {% if url_name in 'task_list_assigned task_quick_create task_detail task_update project_tasks project_kanban' %}active{% endif %}">
       <i class="fas fa-tasks fa-fw"></i>
       <span class="nav-text">Tarefas</span>
     </a>
@@ -55,6 +56,7 @@
       <span class="nav-text">Administração</span>
     </a>
     {% endif %}
+    {% endwith %}
   </nav>
   <div class="sidebar-footer">
     <button id="sidebarToggle" class="btn-toggle" aria-label="Toggle sidebar">

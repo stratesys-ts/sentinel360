@@ -7,51 +7,50 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         from django.contrib.auth.models import Permission
         from django.contrib.contenttypes.models import ContentType
-        from apps.projects.models import Project, Task
+        from apps.projects.models import Project, Issue
         from apps.timesheet.models import TimeEntry
-        from apps.helpdesk.models import Ticket
 
         groups_permissions = {
             'Administrador': '__all__',
             'Gerente Delivery': {
                 '__modules__': ['access_helpdesk', 'access_approvals'],
                 'projects': ['view_project', 'add_project', 'change_project', 'delete_project'],
-                'tasks': ['view_task', 'add_task', 'change_task', 'delete_task'],
+                'issues': ['view_issue', 'add_issue', 'change_issue', 'delete_issue'],
                 'timesheet': ['view_timeentry', 'change_timeentry', 'delete_timeentry'],
                 'helpdesk': ['view_ticket', 'add_ticket', 'change_ticket', 'delete_ticket'],
             },
             'Gerente AMS': {
                 '__modules__': ['access_helpdesk', 'access_approvals'],
                 'projects': ['view_project', 'add_project', 'change_project', 'delete_project'],
-                'tasks': ['view_task', 'add_task', 'change_task', 'delete_task'],
+                'issues': ['view_issue', 'add_issue', 'change_issue', 'delete_issue'],
                 'timesheet': ['view_timeentry', 'change_timeentry', 'delete_timeentry'],
                 'helpdesk': ['view_ticket', 'add_ticket', 'change_ticket', 'delete_ticket'],
             },
             'Gerente Orion': {
                 '__modules__': ['access_helpdesk', 'access_approvals'],
                 'projects': ['view_project', 'add_project', 'change_project', 'delete_project'],
-                'tasks': ['view_task', 'add_task', 'change_task', 'delete_task'],
+                'issues': ['view_issue', 'add_issue', 'change_issue', 'delete_issue'],
                 'timesheet': ['view_timeentry', 'change_timeentry', 'delete_timeentry'],
                 'helpdesk': ['view_ticket', 'add_ticket', 'change_ticket', 'delete_ticket'],
             },
             'Consultor Delivery': {
                 '__modules__': ['access_helpdesk'],
                 'projects': ['view_project'],
-                'tasks': ['view_task', 'change_task'],
+                'issues': ['view_issue', 'change_issue'],
                 'timesheet': ['view_timeentry', 'add_timeentry', 'change_timeentry'],
                 'helpdesk': ['view_ticket', 'add_ticket', 'change_ticket'],
             },
             'Consultor AMS': {
                 '__modules__': ['access_helpdesk'],
                 'projects': ['view_project'],
-                'tasks': ['view_task', 'change_task'],
+                'issues': ['view_issue', 'change_issue'],
                 'timesheet': ['view_timeentry', 'add_timeentry', 'change_timeentry'],
                 'helpdesk': ['view_ticket', 'add_ticket', 'change_ticket'],
             },
             'Consultor Orion': {
                 '__modules__': ['access_helpdesk'],
                 'projects': ['view_project'],
-                'tasks': ['view_task', 'change_task'],
+                'issues': ['view_issue', 'change_issue'],
                 'timesheet': ['view_timeentry', 'add_timeentry', 'change_timeentry'],
                 'helpdesk': ['view_ticket', 'add_ticket', 'change_ticket'],
             },
@@ -66,7 +65,7 @@ class Command(BaseCommand):
             'Gerente de Projetos Delivery': { # Assuming similar to Gerente Delivery for now
                  '__modules__': ['access_helpdesk', 'access_approvals'],
                  'projects': ['view_project', 'add_project', 'change_project', 'delete_project'],
-                'tasks': ['view_task', 'add_task', 'change_task', 'delete_task'],
+                'issues': ['view_issue', 'add_issue', 'change_issue', 'delete_issue'],
                 'timesheet': ['view_timeentry', 'change_timeentry', 'delete_timeentry'],
                 'helpdesk': ['view_ticket', 'add_ticket', 'change_ticket', 'delete_ticket'],
             }

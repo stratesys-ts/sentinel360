@@ -234,7 +234,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Projeto</label>
-                        <select name="project" class="form-select" required>
+                        <select name="project" id="tsProjectSelect" class="form-select" required>
                             {% for project in projects %}
                             <option value="{{ project.id }}">{{ project.name }}</option>
                             {% endfor %}
@@ -242,11 +242,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Tarefa</label>
-                        <select name="task" class="form-select">
-                            <option value="">Selecione (Opcional)</option>
-                            {% for task in tasks %}
-                            <option value="{{ task.id }}">{{ task.title }}</option>
-                            {% endfor %}
+                        <select name="task" id="tsTaskSelect" class="form-select">
+                            <option value="">Selecione</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -307,11 +304,39 @@
     </div>
 </div>
 
+{{ project_tasks_map|json_script:'projectTasksData' }}
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/timesheet_detail.js' %}"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const projectTasksEl = document.getElementById('projectTasksData');
+        const projectTasks = projectTasksEl ? JSON.parse(projectTasksEl.textContent) : {};
+        const projectSelect = document.getElementById('tsProjectSelect');
+        const taskSelect = document.getElementById('tsTaskSelect');
+
+        const populateTasks = (projectId) => {
+            if (!taskSelect) return;
+            taskSelect.innerHTML = '<option value="">Selecione</option>';
+            const tasks = projectTasks[projectId] || [];
+            tasks.forEach((t) => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.title;
+                taskSelect.appendChild(opt);
+            });
+        };
+
+        if (projectSelect) {
+            projectSelect.addEventListener('change', (e) => populateTasks(e.target.value));
+            if (projectSelect.value) {
+                populateTasks(projectSelect.value);
+            }
+        }
+    });
+
     var deleteRowModalInstance = null;
 
     document.addEventListener('DOMContentLoaded', function () {

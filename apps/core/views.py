@@ -2,10 +2,16 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView, CreateView
 from django.urls import reverse_lazy
-from apps.helpdesk.models import Ticket
 from django.db.models import Q
+
+from apps.projects.models import Issue
+from django.contrib.auth import get_user_model
+from .forms import ExternalUserForm, InternalUserForm
+
+User = get_user_model()
+
 
 class CustomLoginView(LoginView):
     template_name = 'login.html'
@@ -21,12 +27,14 @@ class CustomLoginView(LoginView):
         user = form.get_user()
         # Prevent clients from logging in via the main login page (login.html)
         if self.template_name == 'login.html' and user.is_client():
-            form.add_error(None, "Acesso não permitido")
+            form.add_error(None, "Acesso nao permitido")
             return self.form_invalid(form)
         return super().form_valid(form)
 
+
 def portal_login(request):
     return CustomLoginView.as_view(template_name='login_portal.html')(request)
+
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard.html'
@@ -38,23 +46,22 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        # Import models inside method to avoid circular imports if any
-        from apps.projects.models import Project, Task
+        from apps.projects.models import Project
         from apps.timesheet.models import TimeEntry
         from django.utils import timezone
-        from django.db.models import Sum, Q
-        
+        from django.db.models import Sum
+
         user = self.request.user
 
-        # Tickets: apenas os relacionados ao usuário (criador ou responsável)
-        context['open_tickets_count'] = Ticket.objects.filter(
-            status='OPEN'
+        # Tickets (Issues do tipo Help Desk) do usuario
+        context['open_tickets_count'] = Issue.objects.filter(
+            issue_type=Issue.IssueType.HELP_DESK,
+            status__in=[Issue.Status.TODO, Issue.Status.DOING],
         ).filter(
             Q(created_by=user) | Q(assigned_to=user)
         ).distinct().count()
         
-        # Horas no mês: apenas do usuário logado
+        # Horas no mes: apenas do usuario logado
         now = timezone.now()
         entries = TimeEntry.objects.filter(
             date__year=now.year,
@@ -64,7 +71,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         total_hours = entries.aggregate(total=Sum('hours'))['total'] or 0
         context['total_hours_month'] = f"{int(total_hours)}h"
         
-        # Projetos: apenas os visíveis ao usuário
+        # Projetos: apenas os visiveis ao usuario
         if user.is_superuser or user.has_perm('projects.view_project') or user.has_perm('projects.change_project'):
             projects_qs = Project.objects.all()
         elif user.is_client():
@@ -78,7 +85,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['active_projects_count'] = projects_qs.filter(status=Project.Status.IN_PROGRESS).distinct().count()
         
         # Tasks assigned to the current user (any status)
-        context['my_tasks_count'] = Task.objects.filter(assigned_to=user).count()
+        context['my_tasks_count'] = Issue.objects.filter(issue_type=Issue.IssueType.TASK, assigned_to=user).count()
         
         return context
 
@@ -91,7 +98,7 @@ class GlobalSearchView(LoginRequiredMixin, TemplateView):
         query = self.request.GET.get('q', '').strip()
         user = self.request.user
 
-        from apps.projects.models import Project, Task
+        from apps.projects.models import Project
         from apps.timesheet.models import Timesheet
 
         results = {
@@ -102,14 +109,13 @@ class GlobalSearchView(LoginRequiredMixin, TemplateView):
         }
 
         if query:
-            # Tickets: apenas se o usuário tem perm e é criador/atribuído
+            # Tickets (Issues Help Desk)
             if user.has_perm('helpdesk.view_ticket'):
                 ticket_filter = Q(title__icontains=query) | Q(description__icontains=query)
-                # Busca por ID (#123 ou 123) incluindo public_id
                 num = query.lstrip('#')
                 if num.isdigit():
                     ticket_filter |= Q(id=int(num)) | Q(public_id=int(num))
-                tickets_qs = Ticket.objects.filter(ticket_filter).filter(
+                tickets_qs = Issue.objects.filter(ticket_filter, issue_type=Issue.IssueType.HELP_DESK).filter(
                     Q(created_by=user) | Q(assigned_to=user)
                 ).distinct()[:10]
                 results['tickets'] = tickets_qs
@@ -120,7 +126,7 @@ class GlobalSearchView(LoginRequiredMixin, TemplateView):
                     Q(name__icontains=query) | Q(description__icontains=query)
                 ).distinct()[:10]
 
-            # Tarefas: limitadas às atribuídas se não for staff
+            # Tarefas: limitadas as atribuidas se nao for staff
             if user.has_perm('projects.view_task'):
                 task_filter = Q(title__icontains=query) | Q(description__icontains=query)
                 num = query.lstrip('#')
@@ -128,9 +134,9 @@ class GlobalSearchView(LoginRequiredMixin, TemplateView):
                     task_filter |= Q(id=int(num)) | Q(public_id=int(num))
                 if not user.is_staff:
                     task_filter &= Q(assigned_to=user)
-                results['tasks'] = Task.objects.filter(task_filter).distinct()[:10]
+                results['tasks'] = Issue.objects.filter(task_filter, issue_type=Issue.IssueType.TASK).distinct()[:10]
 
-            # Timesheets: próprias; se staff, todas
+            # Timesheets: proprias; se staff, todas
             if user.has_perm('timesheet.view_timesheet'):
                 ts_filter = Q(user=user) if not user.is_staff else Q()
                 results['timesheets'] = Timesheet.objects.filter(
@@ -166,6 +172,7 @@ class SettingsView(LoginRequiredMixin, TemplateView):
         context['user_profile'] = self.request.user
         return context
 
+
 @login_required
 def portal_dashboard(request):
     if not request.user.is_client():
@@ -178,12 +185,15 @@ def portal_dashboard(request):
         'closed': 0
     }
 
-    if request.user.client_project:
-        tickets = Ticket.objects.filter(project=request.user.client_project).order_by('-created_at')
+    if getattr(request.user, 'client_project', None):
+        tickets = Issue.objects.filter(
+            project=request.user.client_project,
+            issue_type=Issue.IssueType.HELP_DESK,
+        ).order_by('-created_at')
         
-        stats['open'] = tickets.filter(status='OPEN').count()
-        stats['in_progress'] = tickets.filter(status='IN_PROGRESS').count()
-        stats['closed'] = tickets.filter(status__in=['RESOLVED', 'CLOSED']).count()
+        stats['open'] = tickets.filter(status=Issue.Status.TODO).count()
+        stats['in_progress'] = tickets.filter(status=Issue.Status.DOING).count()
+        stats['closed'] = tickets.filter(status=Issue.Status.DONE).count()
     
     context = {
         'tickets': tickets[:5], # Show only recent 5
@@ -192,21 +202,16 @@ def portal_dashboard(request):
     
     return render(request, 'portal/dashboard.html', context)
 
+
 def logout_view(request):
     from django.contrib.auth import logout
     next_page = request.GET.get('next', 'core:login')
     logout(request)
     return redirect(next_page)
 
-from django.views.generic import ListView, CreateView
-from django.contrib.auth import get_user_model
-from .forms import ExternalUserForm, InternalUserForm
-
-User = get_user_model()
 
 class StaffOnlyMixin(UserPassesTestMixin):
-    """Restrict access to internal staff (manager/admin/superuser)."""
-
+    # Restrict access to internal staff (manager/admin/superuser).
     def test_func(self):
         user = self.request.user
         return user.is_superuser or user.role in [User.Role.ADMIN, User.Role.MANAGER]
@@ -223,6 +228,7 @@ class InternalUserListView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     def get_queryset(self):
         return User.objects.exclude(role=User.Role.CLIENT)
 
+
 class InternalUserCreateView(LoginRequiredMixin, StaffOnlyMixin, CreateView):
     model = User
     form_class = InternalUserForm
@@ -232,6 +238,7 @@ class InternalUserCreateView(LoginRequiredMixin, StaffOnlyMixin, CreateView):
     def form_valid(self, form):
         return super().form_valid(form)
 
+
 class ExternalUserListView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     model = User
     template_name = 'core/user_list_external.html'
@@ -239,6 +246,7 @@ class ExternalUserListView(LoginRequiredMixin, StaffOnlyMixin, ListView):
 
     def get_queryset(self):
         return User.objects.filter(role=User.Role.CLIENT)
+
 
 class ExternalUserCreateView(LoginRequiredMixin, StaffOnlyMixin, CreateView):
     model = User
@@ -248,9 +256,4 @@ class ExternalUserCreateView(LoginRequiredMixin, StaffOnlyMixin, CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        # Here you might want to send an email with the generated password
-        # For now, we'll just pass it to the template via session or messages if needed
-        # But since we redirect, maybe we show it in a success message?
-        # For simplicity in this step, we'll just let it redirect. 
-        # The user._generated_password contains the password.
         return response

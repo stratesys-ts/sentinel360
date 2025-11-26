@@ -26,6 +26,33 @@ function getCookie(name) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Populate task dropdown based on selected project (only user's tasks passed from context)
+    var projectTasksEl = document.getElementById('projectTasksData');
+    var projectTasks = projectTasksEl ? JSON.parse(projectTasksEl.textContent) : {};
+    var projectSelectEl = document.getElementById('tsProjectSelect');
+    var taskSelectEl = document.getElementById('tsTaskSelect');
+
+    function populateTasks(projectId) {
+        if (!taskSelectEl) return;
+        taskSelectEl.innerHTML = '<option value="">Selecione</option>';
+        var tasks = projectTasks[projectId] || [];
+        tasks.forEach(function (t) {
+            var opt = document.createElement('option');
+            opt.value = t.id;
+            opt.textContent = t.title;
+            taskSelectEl.appendChild(opt);
+        });
+    }
+
+    if (projectSelectEl) {
+        projectSelectEl.addEventListener('change', function (e) {
+            populateTasks(e.target.value);
+        });
+        if (projectSelectEl.value) {
+            populateTasks(projectSelectEl.value);
+        }
+    }
+
     var gridForm = document.getElementById('gridForm');
     if (!gridForm) return;
 

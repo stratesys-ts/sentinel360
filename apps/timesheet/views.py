@@ -27,7 +27,7 @@ except ImportError:
     letter = None
     canvas = None
 from .models import TimeEntry, Timesheet, Activity
-from apps.projects.models import Project, Task
+from apps.projects.models import Project, Issue
 from .forms import ActivityForm, TimeEntryForm, TimesheetForm
 
 class TimesheetListView(LoginRequiredMixin, ListView):
@@ -190,8 +190,18 @@ class TimesheetDetailView(LoginRequiredMixin, ListView): # Using ListView to lis
         # 1. Status must be IN_PROGRESS or LATE (active for timesheets)
         # 2. User must be in the team OR be the project manager OR be the project owner
         from django.db.models import Q
-        context['projects'] = self._assignable_projects(self.request.user)
-        context['tasks'] = Task.objects.all() # You might want to filter tasks based on project via AJAX later
+        projects = self._assignable_projects(self.request.user)
+        context['projects'] = projects
+        task_qs = Issue.objects.filter(
+            issue_type=Issue.IssueType.TASK,
+            project__in=projects,
+            assigned_to=self.request.user
+        )
+        project_tasks = {}
+        for t in task_qs:
+            project_tasks.setdefault(t.project_id, []).append({"id": t.id, "title": t.title})
+        context['tasks'] = task_qs
+        context['project_tasks_map'] = project_tasks
         context['activities'] = Activity.objects.filter(active=True)
 
         # Group entries by Project/Task/Activity for the grid
