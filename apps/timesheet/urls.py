@@ -13,6 +13,11 @@ app_name = 'timesheet'
 urlpatterns = [
     path('', TimesheetListView.as_view(), name='timesheet_list'),
     path('approvals/', TimesheetApprovalListView.as_view(), name='timesheet_approval_list'),
+    path(
+        'approvals/he/',
+        TimesheetApprovalListView.as_view(template_name='timesheet/timesheet_approval_he_list.html'),
+        name='timesheet_approval_he_list'
+    ),
     path('entries/', TimeEntryListView.as_view(), name='entry_list'),
     path('create/', TimesheetCreateView.as_view(), name='timesheet_create'),
     path('delete/<int:pk>/', TimesheetDeleteView.as_view(), name='timesheet_delete'),

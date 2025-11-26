@@ -45,15 +45,38 @@ class ProjectForm(forms.ModelForm):
 class IssueForm(forms.ModelForm):
     class Meta:
         model = Issue
-        fields = ['title', 'description', 'assigned_to', 'status', 'priority', 'due_date', 'issue_type']
+        fields = ['title', 'description', 'assigned_to', 'status', 'priority', 'start_date', 'due_date', 'issue_type']
         widgets = {
-            'due_date': forms.DateInput(attrs={'type': 'date'}),
+            'start_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
+            'due_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
             'description': forms.Textarea(attrs={'rows': 3}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if 'issue_type' in self.fields:
-            self.fields['issue_type'].initial = Issue.IssueType.TASK
+            self.fields['issue_type'].initial = getattr(self.instance, 'issue_type', Issue.IssueType.TASK)
+            self.fields['issue_type'].widget = forms.HiddenInput()
+
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+
+        # Ajusta formatos de data
+        if 'start_date' in self.fields:
+            self.fields['start_date'].widget.format = '%Y-%m-%d'
+            self.fields['start_date'].input_formats = ['%Y-%m-%d', '%d/%m/%Y']
+        if 'due_date' in self.fields:
+            self.fields['due_date'].widget.format = '%Y-%m-%d'
+            self.fields['due_date'].input_formats = ['%Y-%m-%d', '%d/%m/%Y']
+
+        # Limita responsaveis ao time do projeto (se houver)
+        project = getattr(self.instance, 'project', None)
+        if project:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            member_ids = set(project.team.values_list('id', flat=True))
+            if project.project_manager_id:
+                member_ids.add(project.project_manager_id)
+            if project.project_owner_id:
+                member_ids.add(project.project_owner_id)
+            self.fields['assigned_to'].queryset = User.objects.filter(id__in=member_ids, is_active=True)

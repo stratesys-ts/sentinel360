@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Aprovação HE{% endblock %}
+{% block page_title %}Aprovação HE{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="mb-0">Aprovação HE</h4>
+        <p class="text-muted small mb-0">Gerencie as folhas de ponto de horas extras enviadas para sua aprovação.</p>
+    </div>
+</div>
+
+{% if timesheets %}
+<div class="card mb-3 shadow-sm border-0">
+    <div class="list-group list-group-flush">
+        {% for timesheet in timesheets %}
+        <a href="{% url 'timesheet:timesheet_detail' timesheet.pk %}"
+            class="list-group-item list-group-item-action border-0 px-4 py-3 d-flex align-items-center">
+            <div class="d-flex align-items-center flex-grow-1">
+                <div class="icon-square bg-light text-warning rounded-3 me-3 d-flex align-items-center justify-content-center"
+                    style="width: 40px; height: 40px;">
+                    <i class="fas fa-user-clock fa-lg"></i>
+                </div>
+                <div>
+                    <span class="fw-bold text-dark d-block">
+                        {{ timesheet.user.get_full_name|default:timesheet.user.username }}
+                    </span>
+                    <span class="text-muted small">
+                        {{ timesheet.start_date|date:"d/m/Y" }} a {{ timesheet.end_date|date:"d/m/Y" }}
+                    </span>
+                    <span
+                        class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill fw-normal ms-2"
+                        style="font-size: 0.75rem;">Aguardando Aprovação</span>
+                </div>
+            </div>
+            <div class="d-flex align-items-center">
+                <i class="fas fa-chevron-right text-muted opacity-50"></i>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+        <div class="mb-3 text-muted opacity-25">
+            <i class="fas fa-check-circle fa-4x"></i>
+        </div>
+        <h5 class="text-muted fw-normal">Tudo em dia!</h5>
+        <p class="text-muted small">Não há folhas de ponto de horas extras pendentes no momento.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

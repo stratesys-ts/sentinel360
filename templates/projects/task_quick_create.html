@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-<form method="post" id="taskForm" novalidate>
+<form method="post" id="taskCreateForm" novalidate>
   {% csrf_token %}
   <div class="card task-layout" style="background:#f4f8ff; border:1px solid #e0e7ff; border-radius:12px;">
     <div class="card-body">
@@ -54,7 +54,7 @@
       </div>
       {% endif %}
 
-            <div class="row g-3">
+      <div class="row g-3">
         <div class="col-md-4">
           <label class="form-label fw-semibold">Tipo <span style="color:#e11d48;">*</span></label>
           <select class="form-select" id="taskType" name="task_type" required aria-required="true">
@@ -94,15 +94,16 @@
           <input type="date" class="form-control" name="due_date">
         </div>
       </div>
+    </div>
   </div>
-  <div class="d-flex justify-content-end mt-3 gap-2">
-    <a href="{{ cancel_url }}" class="btn btn-outline">Cancelar</a>
-    <button class="btn btn-primary" id="taskSaveBtn" type="submit">Salvar</button>
-  </div>
+</form>
+
+<div class="d-flex justify-content-end mt-3 gap-2">
+  <a href="{{ cancel_url }}" class="btn btn-outline">Cancelar</a>
+  <button class="btn btn-primary" id="taskSaveBtn" type="submit" form="taskCreateForm">Salvar</button>
+</div>
 
 {{ project_members_map|json_script:'projectMembersData' }}
-
-</form>
 
 <!-- Modal de alerta custom -->
 <div id="taskAlertModal" class="modal fade" tabindex="-1" aria-hidden="true">
@@ -132,7 +133,7 @@
     const assigneeSelect = document.getElementById('taskAssignee');
     const projectMembersData = document.getElementById('projectMembersData');
     const projectMembers = projectMembersData ? JSON.parse(projectMembersData.textContent) : {};
-    const form = document.getElementById('taskForm');
+    const form = document.getElementById('taskCreateForm');
     const saveBtn = document.getElementById('taskSaveBtn');
     const startDateInput = document.getElementById('taskStartDate');
 
@@ -170,12 +171,12 @@
     if (saveBtn && form) {
       saveBtn.addEventListener('click', (e) => {
         const missing = [];
-        if (!titleInput.value.trim()) missing.push('T?tulo');
+        if (!titleInput.value.trim()) missing.push('Titulo');
         if (!typeSelect.value) missing.push('Tipo');
         if (projectSelect && !projectSelect.value) missing.push('Projeto');
         if (missing.length) {
           e.preventDefault();
-          const msg = 'Preencha os campos obrigat?rios: ' + missing.join(', ');
+          const msg = 'Preencha os campos obrigatorios: ' + missing.join(', ');
           window.scrollTo({ top: 0, behavior: 'smooth' });
           const modalEl = document.getElementById('taskAlertModal');
           const msgEl = document.getElementById('taskAlertMessage');

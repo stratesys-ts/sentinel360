@@ -13,13 +13,13 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Título</th>
+          <th>Titulo</th>
           <th>Projeto</th>
           <th>Prioridade</th>
           <th>Status</th>
-          <th>Início</th>
+          <th>Inicio</th>
           <th>Fim</th>
-          <th style="text-align:center; width:110px;">Ações</th>
+          <th style="text-align:center; width:110px;">Acoes</th>
         </tr>
       </thead>
       <tbody>
@@ -32,20 +32,20 @@
           <td>{{ task.project.name|default:"-" }}</td>
           <td>
             {% if task.priority == 'HIGH' %}
-              <span class="badge badge-danger">Alta</span>
+              <span class="badge badge-danger" style="background:#fde8e8; color:#9b1c1c;">Alta</span>
             {% elif task.priority == 'LOW' %}
-              <span class="badge badge-secondary">Baixa</span>
+              <span class="badge badge-secondary" style="background:#f4f5f7; color:#374151;">Baixa</span>
             {% else %}
-              <span class="badge badge-info">Média</span>
+              <span class="badge badge-info" style="background:#e0f2fe; color:#0f3e68;">Media</span>
             {% endif %}
           </td>
           <td>
             {% if task.status == 'DONE' %}
-              <span class="badge badge-success">Concluída</span>
+              <span class="badge badge-success" style="background:#def7ec; color:#0f5132;">Concluida</span>
             {% elif task.status == 'DOING' %}
-              <span class="badge badge-warning">Em andamento</span>
+              <span class="badge badge-info" style="background:#e0f2fe; color:#0f3e68;">Em andamento</span>
             {% else %}
-              <span class="badge badge-secondary">A fazer</span>
+              <span class="badge badge-secondary" style="background:#f4f5f7; color:#374151;">A fazer</span>
             {% endif %}
           </td>
           <td>{{ task.start_date|date:"d/m/Y"|default:"-" }}</td>
@@ -59,6 +59,7 @@
             <form action="{% url 'projects:task_update' task.id %}" method="post" style="display:inline;">
               {% csrf_token %}
               <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="redirect_to" value="{{ request.get_full_path }}">
               <button type="submit" title="Excluir"
                 style="background:none;border:none;color:#d9534f;font-size:1.05rem;cursor:pointer;padding:0 0.2rem;"
                 onclick="return confirmDelete(event, this.form);">
@@ -70,7 +71,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="8" class="text-center text-muted py-4">Nenhuma tarefa atribuída.</td>
+          <td colspan="8" class="text-center text-muted py-4">Nenhuma tarefa atribuida.</td>
         </tr>
         {% endfor %}
       </tbody>

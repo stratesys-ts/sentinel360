@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Tarefa{% endblock %}
+{% block page_title %}Editar Tarefa{% endblock %}
+
+{% block extra_css %}
+<style>
+  .task-layout .task-description { min-height: 140px; }
+  .task-layout .card-body { padding: 1rem 1.1rem 0.9rem 1.1rem; }
+  .task-layout h4 { color:#1f2937; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card task-layout" style="background:#f4f8ff; border:1px solid #e0e7ff; border-radius:12px; padding: 1.25rem 1.25rem 0 1.25rem;">
+  <div class="card-header" style="display: flex; align-items: center; gap: 1rem; border: none; background: transparent; padding: 0 0 1rem 0;">
+    <div>
+      <h4 class="mb-1">Editar Tarefa #{{ task.public_id|default:task.id }}</h4>
+      {% if project %}<span class="text-muted small">Projeto: {{ project.name }}</span>{% endif %}
+    </div>
+    <span class="badge badge-info">{{ task.get_status_display|default:"" }}</span>
+  </div>
+</div>
+
+<form method="post" id="taskEditForm" class="card task-layout" style="background:#f4f8ff; border:1px solid #e0e7ff; border-radius:12px;">
+  {% csrf_token %}
+  <div class="card-body">
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+    <div class="row g-3">
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">Titulo</label>
+        {{ form.title }}
+        {{ form.title.errors }}
+      </div>
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">Descricao</label>
+        {{ form.description }}
+        {{ form.description.errors }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Responsavel</label>
+        {{ form.assigned_to }}
+        {{ form.assigned_to.errors }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Prioridade</label>
+        {{ form.priority }}
+        {{ form.priority.errors }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Status</label>
+        {{ form.status }}
+        {{ form.status.errors }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Data Inicio</label>
+        {{ form.start_date }}
+        {{ form.start_date.errors }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Data Fim</label>
+        {{ form.due_date }}
+        {{ form.due_date.errors }}
+      </div>
+      {{ form.issue_type }}
+    </div>
+  </div>
+</form>
+
+<div class="d-flex justify-content-end mt-3 gap-2">
+  {% if project %}
+  <a class="btn btn-outline" href="{% url 'projects:project_tasks' project.pk %}">Cancelar</a>
+  {% else %}
+  <a class="btn btn-outline" href="{% url 'projects:task_list_assigned' %}">Cancelar</a>
+  {% endif %}
+  <button type="submit" form="taskEditForm" class="btn btn-primary">Salvar alteracoes</button>
+</div>
+{% endblock %}

@@ -77,6 +77,8 @@ class TimesheetApprovalListView(LoginRequiredMixin, PermissionRequiredMixin, Lis
 
     def has_permission(self):
         user = self.request.user
+        if user.has_perm('core.access_approvals_he'):
+            return True
         # Gestores podem aprovar mesmo sem permissão explícita no grupo
         if getattr(user, 'role', None) == getattr(user, 'Role', None).MANAGER:
             return True
