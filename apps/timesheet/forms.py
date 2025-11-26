@@ -6,8 +6,20 @@ class TimesheetForm(forms.ModelForm):
         model = Timesheet
         fields = ['start_date']
         widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'start_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from django.utils import timezone
+        today = timezone.now().date()
+        start_of_week = today - timezone.timedelta(days=today.isoweekday() - 1)
+        # Ensure date is rendered in ISO for the date input
+        self.fields['start_date'].input_formats = ['%Y-%m-%d', '%d/%m/%Y']
+        self.fields['start_date'].widget.format = '%Y-%m-%d'
+        self.fields['start_date'].initial = start_of_week
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
 
     def clean_start_date(self):
         start_date = self.cleaned_data.get('start_date')
@@ -19,11 +31,6 @@ class TimesheetForm(forms.ModelForm):
                (start_date.year == today.year and start_date.month < today.month):
                 raise forms.ValidationError("Não é permitido criar folhas de ponto para meses anteriores ao atual.")
         return start_date
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.widget.attrs['class'] = 'form-control'
 
 class TimeEntryForm(forms.ModelForm):
     class Meta:

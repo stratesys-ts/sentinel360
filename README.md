@@ -1,163 +1,67 @@
-# ERP System in Python/Django
+# Sentinel360 (ERP Django)
 
-A complete ERP system featuring Help Desk, Timesheet, and Project Management modules.
+Sistema ERP com mÃ³dulos de Help Desk, Timesheet e Projetos.
 
-## Features
+## Recursos
+- AutenticaÃ§Ã£o com funÃ§Ãµes: Admin, Manager, Collaborator, Client.
+- Help Desk: chamados com SLA, categorias e comentÃ¡rios.
+- Timesheet: apontamento de horas com fluxo de aprovaÃ§Ã£o.
+- Projetos: Kanban, tarefas e visÃ£o de cronograma simples.
+- Dashboard: indicadores e atividade recente.
 
-- **Authentication**: Custom roles (Admin, Manager, Collaborator, Client).
-- **Help Desk**: Ticket management with SLA, categories, and comments.
-- **Timesheet**: Daily time tracking with approval workflow.
-- **Projects**: Project management with Kanban board and simple Gantt chart.
-- **Dashboard**: KPIs and recent activity.
+## Stack
+- Backend: Python 3.11+, Django 5.0+, DRF (drf-yasg para Swagger/Redoc).
+- DB: PostgreSQL (prod/Docker) e SQLite (dev opcional); ORM Django.
+- Front: Django Templates, Bootstrap 5, CSS custom, FontAwesome 6, JS vanilla.
+- Infra: Docker/Docker Compose, WhiteNoise, python-dotenv.
 
-## Tech Stack
+## InstalaÃ§Ã£o RÃ¡pida
+1. Clonar: `git clone https://github.com/stratesys-ts/sentinel360.git && cd sentinel360`
+2. Virtualenv: `python -m venv .venv && .venv\Scripts\activate`
+3. DependÃªncias: `pip install -r requirements.txt`
+4. DB (Docker): `docker-compose up -d`
+5. MigraÃ§Ãµes: `python manage.py migrate`
+6. Dados demo: `python create_fixtures.py`
+7. Rodar: `python manage.py runserver`
+8. Acesso: http://127.0.0.1:8000 (admin/admin, manager/manager, collab/collab, client/client)
 
-### Backend
+## Estrutura
+- apps/core: autenticaÃ§Ã£o e dashboard
+- apps/helpdesk: chamados
+- apps/timesheet: horas e aprovaÃ§Ãµes
+- apps/projects: projetos, tarefas e kanban
 
-- **Language**: Python 3.11+
-- **Framework**: Django 5.0+
-- **API**: Django REST Framework (DRF)
-- **Documentation**: Swagger / Redoc (drf-yasg)
+## Onboarding RÃ¡pido (Git)
+1. Clonar e ativar venv (passos acima).
+2. `pip install -r requirements.txt`
+3. `python manage.py migrate`
+4. `python manage.py runserver`
+5. Fluxo Git:
+   - Atualizar: `git pull origin main`
+   - Trabalhar em branch: `git checkout -b feature/minha-tarefa`
+   - Commit/push: `git add . && git commit -m "mensagem" && git push -u origin feature/minha-tarefa`
+   - PR e merge; depois `git checkout main && git pull`
+6. Se precisar resetar para o remoto: `git fetch origin && git checkout main && git reset --hard origin/main`
 
-### Database
+## VS Code + GitHub (Fluxo RÃ¡pido)
+1. ExtensÃµes: GitHub Pull Requests, GitLens, Python.
+2. Clone via VS Code (`Ctrl+Shift+P` > Git: Clone) com URL GitHub.
+3. Terminal integrado: `.venv\Scripts\activate`.
+4. Branch: `git checkout -b feature/minha-tarefa`.
+5. Commit: `git add .` e `git commit -m "mensagem"`.
+6. Push: `git push -u origin feature/minha-tarefa`.
+7. Abrir PR (Source Control ou browser). ApÃ³s merge: `git checkout main && git pull`.
 
-- **Primary**: PostgreSQL 15+ (Production/Docker)
-- **Development**: SQLite (Optional)
-- **ORM**: Django ORM
+## VS Code + Git + Azure DevOps
+1. ExtensÃµes: Azure Repos (ou GitHub se usar integraÃ§Ã£o), GitLens, Python.
+2. Clone via VS Code (`Ctrl+Shift+P` > Git: Clone) com URL do Azure Repos.
+3. Ativar venv e instalar deps se preciso.
+4. Branch: `git checkout -b feature/minha-tarefa`.
+5. Commit: `git add . && git commit -m "mensagem"`.
+6. Push: `git push -u origin feature/minha-tarefa` (use token do Azure se pedir).
+7. Abrir PR no Azure DevOps (Repos > Pull Requests) e selecionar revisores.
+8. Depois do merge: `git checkout main && git pull`.
 
-### Frontend
-
-- **Template Engine**: Django Templates (DTL)
-- **Styling**:
-  - Bootstrap 5 (Layout & Components)
-  - Custom CSS (Glassmorphism & Modern UI)
-  - FontAwesome 6 (Icons)
-- **Interactivity**: Vanilla JavaScript
-
-### Infrastructure & Tools
-
-- **Containerization**: Docker & Docker Compose
-- **Static Files**: WhiteNoise
-- **Environment**: python-dotenv
-
-## Installation
-
-1. **Clone the repository**
-2. **Create a virtual environment**
-
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate  # Windows
-   ```
-
-3. **Install dependencies**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Setup Database (Docker)**
-
-   ```bash
-   docker-compose up -d
-   ```
-
-5. **Run Migrations**
-
-   ```bash
-   python manage.py migrate
-   ```
-
-6. **Create Demo Data**
-
-   ```bash
-   python create_fixtures.py
-   ```
-
-7. **Run Server**
-
-   ```bash
-   python manage.py runserver
-   ```
-
-8. **Access**: `http://127.0.0.1:8000`
-   - **Admin**: admin / admin
-   - **Manager**: manager / manager
-   - **Collaborator**: collab / collab
-   - **Client**: client / client
-
-## Structure
-
-- `apps/core`: Auth & Dashboard
-- `apps/helpdesk`: Ticket System
-- `apps/timesheet`: Time Tracking
-- `apps/projects`: Project Management
-
-
-
-
-# 🚀 Guia de Onboarding para Novos Colaboradores
-
-Este guia explica exatamente os passos que um novo colaborador deve seguir para rodar o projeto **Sentinel360 (ERP Django)** localmente e trabalhar de forma colaborativa usando Git.
-
-## ✅ 1. Clonar o repositório
-```bash
-git clone https://github.com/stratesys-ts/sentinel360.git
-cd sentinel360
-```
-
-## ✅ 2. Criar e ativar a Virtual Environment
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-```
-
-## ✅ 3. Instalar dependências
-```bash
-pip install -r requirements.txt
-```
-
-## ✅ 4. Rodar migrações
-```bash
-python manage.py migrate
-```
-
-## ✅ 5. Iniciar o servidor
-```bash
-python manage.py runserver
-```
-
-Acesse: http://127.0.0.1:8000
-
-## 🎯 6. Fluxo de trabalho com Git
-**Antes de trabalhar:**
-```bash
-git pull origin main
-```
-
-**Para enviar alterações:**
-```bash
-git add .
-git commit -m "Descrição"
-git push origin main
-```
-
-## 🧽 7. Se o código estiver desatualizado
-```bash
-git fetch origin
-git checkout main
-git reset --hard origin/main
-```
-
-## 🆘 8. Problemas comuns
-
-### ModuleNotFoundError
-```bash
-pip install -r requirements.txt
-```
-
-### Erro ao rodar runserver
-```bash
-.venv\Scripts\activate
-python manage.py migrate
-```
+## Problemas Comuns
+- ModuleNotFoundError: `pip install -r requirements.txt`
+- Erro no runserver: ative venv e rode `python manage.py migrate`

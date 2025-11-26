@@ -71,3 +71,14 @@ class TicketUpdateView(LoginRequiredMixin, HelpdeskAccessMixin, UpdateView):
     def form_valid(self, form):
         form.instance.issue_type = Issue.IssueType.HELP_DESK
         return super().form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        action = request.POST.get('action')
+
+        if action == 'delete':
+            if request.user.has_perm('helpdesk.delete_ticket') or request.user.is_superuser:
+                self.object.delete()
+            return redirect(self.success_url)
+
+        return super().post(request, *args, **kwargs)

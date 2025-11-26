@@ -47,6 +47,13 @@
           </a>
         </li>
 
+        <!-- Refresh Icon -->
+        <li class="nav-item me-2">
+          <a href="#" id="navRefresh" class="nav-link p-1" title="Atualizar página">
+            <i class="fas fa-sync-alt" style="font-size: 1rem;"></i>
+          </a>
+        </li>
+
         <!-- Quick Add (between bell and user avatar) -->
         <li class="nav-item dropdown position-relative me-2">
           <button class="btn btn-warning d-flex align-items-center justify-content-center p-0"
@@ -135,6 +142,7 @@
     const toggle = document.getElementById('quickAddToggle');
     const menu = document.getElementById('quickAddMenu');
     const icon = toggle?.querySelector('.quick-add-icon');
+    const refreshBtn = document.getElementById('navRefresh');
 
     if (!toggle || !menu || !icon) return;
 
@@ -175,5 +183,12 @@
         closeMenu();
       }
     });
+
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.reload();
+      });
+    }
   });
 </script>
