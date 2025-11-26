@@ -3,10 +3,23 @@
 {% block title %}Tarefas{% endblock %}
 {% block page_title %}Tarefas{% endblock %}
 
+{% block extra_css %}
+<style>
+  .item-count {
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.75rem;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="card">
   <div class="card-header d-flex align-items-center justify-content-between">
-    <h3 class="mb-0">Minhas Tarefas</h3>
+    <h3 class="mb-0" style="display: flex; align-items: baseline; gap: 0.4rem;">
+      Minhas Tarefas
+      <span class="item-count">({{ tasks|length }})</span>
+    </h3>
   </div>
   <div class="table-container">
     <table class="table mb-0">

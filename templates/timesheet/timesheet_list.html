@@ -2,6 +2,25 @@
 
 {% block title %}Folhas de Ponto{% endblock %}
 
+{% block extra_css %}
+<style>
+  .status-pill-submitted {
+    background: #f5c400;
+    color: #fff;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-4">
   <div>
@@ -36,8 +55,7 @@
             <span class="badge bg-light text-secondary border border-secondary-subtle rounded-pill fw-normal"
               style="font-size: 0.75rem;">Rascunho</span>
             {% elif timesheet.status == 'SUBMITTED' %}
-            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill fw-normal"
-              style="font-size: 0.75rem;">Enviado</span>
+            <span class="status-pill-submitted">Aguardando Aprovação</span>
             {% elif timesheet.status == 'PARTIALLY_APPROVED' %}
             <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill fw-normal"
               style="font-size: 0.75rem;">Aprovado Parcialmente</span>

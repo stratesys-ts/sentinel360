@@ -10,6 +10,21 @@
     .weekend {
         background-color: #e9ecef !important;
     }
+
+    .status-pill-submitted {
+        background: #f5c400;
+        color: #fff;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+    }
 </style>
 {% endblock %}
 
@@ -17,17 +32,20 @@
 <div class="card mb-4">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
         <div style="display: flex; align-items: center; gap: 1rem;">
-            <a href="{% url 'timesheet:timesheet_list' %}" class="btn btn-outline"
-                style="padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+            <a href="{{ back_url }}" class="btn-back">
                 <i class="fas fa-arrow-left"></i> Voltar
             </a>
             <h5 class="mb-0">
                 Folha: {{ timesheet.start_date|date:"d/m/Y" }} a {{ timesheet.end_date|date:"d/m/Y" }}
             </h5>
-            <span
-                class="badge bg-{% if timesheet.status == 'APPROVED' %}success{% elif timesheet.status == 'REJECTED' %}danger{% elif timesheet.status == 'SUBMITTED' %}warning{% elif timesheet.status == 'PARTIALLY_APPROVED' %}info{% else %}secondary{% endif %}">
-                {% if timesheet.status == 'DRAFT' %}Rascunho{% elif timesheet.status == 'SUBMITTED' %}Enviado{% elif timesheet.status == 'PARTIALLY_APPROVED' %}Aprovado Parcialmente{% elif timesheet.status == 'APPROVED' %}Aprovado{% elif timesheet.status == 'REJECTED' %}Rejeitado{% else %}{{ timesheet.get_status_display }}{% endif %}
-            </span>
+            {% if timesheet.status == 'SUBMITTED' %}
+                <span class="status-pill-submitted">AGUARDANDO APROVAÇÃO</span>
+            {% else %}
+                <span
+                    class="badge bg-{% if timesheet.status == 'APPROVED' %}success{% elif timesheet.status == 'REJECTED' %}danger{% elif timesheet.status == 'PARTIALLY_APPROVED' %}info{% else %}secondary{% endif %}">
+                    {% if timesheet.status == 'DRAFT' %}Rascunho{% elif timesheet.status == 'PARTIALLY_APPROVED' %}Aprovado Parcialmente{% elif timesheet.status == 'APPROVED' %}Aprovado{% elif timesheet.status == 'REJECTED' %}Rejeitado{% else %}{{ timesheet.get_status_display }}{% endif %}
+                </span>
+            {% endif %}
         </div>
         <div>
             {% if request.user == timesheet.user or request.user.is_superuser or perms.timesheet.delete_timesheet %}

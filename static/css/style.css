@@ -17,6 +17,33 @@ body {
   /* Navbar height */
 }
 
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid #d1d5db;
+  background: #f8f9fa;
+  color: #4b5563;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-back:hover {
+  background: #eef1f4;
+  border-color: #cbd5e1;
+  color: #374151;
+  text-decoration: none;
+}
+
+.btn-back i {
+  font-size: 0.95rem;
+}
+
 .navbar {
   position: fixed;
   top: 0;
@@ -204,21 +231,24 @@ h6 {
 }
 
 .btn-candy-green {
-  background-color: var(--candy-green);
-  color: #0f5132;
-  border: 1px solid #c6efc6;
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
-  padding: 0.6rem 1.4rem;
-  font-weight: 700;
-  transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  background-color: #178b4c;
+  color: #ffffff;
+  border: 1px solid #178b4c;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(23, 139, 76, 0.25);
+  padding: 0.5rem 1.4rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .btn-candy-green:hover {
-  background-color: #d4f2d4;
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-  color: #0b3d26;
+  background-color: #137843;
+  border-color: #137843;
+  box-shadow: 0 3px 10px rgba(19, 120, 67, 0.3);
+  transform: translateY(-1px);
+  color: #ffffff;
 }
 
 .btn-candy-red {
@@ -635,14 +665,15 @@ h6 {
 .btn-outline-danger-custom {
   border: 2px solid #dc3545;
   color: #dc3545;
-  border-radius: 12px;
+  border-radius: 999px;
   transition: all 0.3s ease;
-  padding: 0.52rem 1rem;
+  padding: 0.5rem 1.4rem;
   font-weight: 600;
   background-color: transparent;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  box-shadow: 0 2px 6px rgba(220, 53, 69, 0.15);
 }
 
 .btn-outline-danger-custom:hover {

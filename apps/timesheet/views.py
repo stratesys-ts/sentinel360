@@ -178,6 +178,13 @@ class TimesheetDetailView(LoginRequiredMixin, ListView): # Using ListView to lis
         context['timesheet'] = timesheet
         context['is_editable'] = timesheet.status in [Timesheet.Status.DRAFT, Timesheet.Status.REJECTED]
         context['can_approve'] = self._can_approve(self.request.user, timesheet)
+        back_origin = self.request.GET.get('from')
+        if back_origin == 'approvals':
+            context['back_url'] = reverse_lazy('timesheet:timesheet_approval_list')
+        elif back_origin == 'approvals_he':
+            context['back_url'] = reverse_lazy('timesheet:timesheet_approval_he_list')
+        else:
+            context['back_url'] = reverse_lazy('timesheet:timesheet_list')
         
         # Generate days of the week
         days = []
@@ -195,9 +202,10 @@ class TimesheetDetailView(LoginRequiredMixin, ListView): # Using ListView to lis
         projects = self._assignable_projects(self.request.user)
         context['projects'] = projects
         task_qs = Issue.objects.filter(
-            issue_type=Issue.IssueType.TASK,
             project__in=projects,
             assigned_to=self.request.user
+        ).filter(
+            Q(issue_type=Issue.IssueType.TASK) | Q(issue_type=Issue.IssueType.HELP_DESK)
         )
         project_tasks = {}
         for t in task_qs:

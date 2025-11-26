@@ -14,7 +14,7 @@
 <div class="card mb-3 shadow-sm border-0">
     <div class="list-group list-group-flush">
         {% for timesheet in timesheets %}
-        <a href="{% url 'timesheet:timesheet_detail' timesheet.pk %}"
+        <a href="{% url 'timesheet:timesheet_detail' timesheet.pk %}?from=approvals"
             class="list-group-item list-group-item-action border-0 px-4 py-3 d-flex align-items-center">
             <div class="d-flex align-items-center flex-grow-1">
                 <div class="icon-square bg-light text-warning rounded-3 me-3 d-flex align-items-center justify-content-center"

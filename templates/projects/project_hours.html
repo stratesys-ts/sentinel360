@@ -85,35 +85,32 @@
   .table-modern tbody tr td {
       border-color: #f1f5f9;
   }
+  .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.45rem 0.95rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+  }
+  .status-in-progress {
+      background: #148554;
+      color: #fff;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="card" style="padding: 1.25rem 1.25rem 0 1.25rem;">
-  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border: none; background: transparent; padding: 0 0 1rem 0;">
-    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-      <a href="{% url 'projects:project_list' %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
-        <i class="fas fa-arrow-left"></i> Voltar
-      </a>
-      <h3 style="margin: 0;">{{ project.name }}</h3>
-      <span class="badge badge-info">{{ project.get_status_display|default:"" }}</span>
-      <span class="text-muted small">Total de horas: {{ total_hours|default:0 }}</span>
-    </div>
-    <div style="display: flex; align-items: center; gap: 0.5rem;">
-      {% if perms.projects.change_project %}
-      <a href="{% url 'projects:project_update' project.pk %}" class="btn btn-outline" style="display: flex; align-items: center; gap: 0.5rem;">
-        <i class="fas fa-edit"></i> Editar
-      </a>
-      {% endif %}
-      {% if perms.projects.delete_project %}
-      <form action="{% url 'projects:project_delete' project.pk %}" method="post" style="display: inline;">
-        {% csrf_token %}
-        <button type="button" class="btn btn-outline-danger-custom" onclick="confirmDelete(event, this.closest('form'))">
-          <i class="fas fa-trash"></i> Excluir
-        </button>
-      </form>
-      {% endif %}
-    </div>
+  <div class="card-header" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; border: none; background: transparent; padding: 0 0 1rem 0;">
+    <h3 style="margin: 0;">{{ project.name }}</h3>
+    {% if project.status == 'IN_PROGRESS' %}
+    <span class="status-badge status-in-progress">{{ project.get_status_display|default:"" }}</span>
+    {% else %}
+    <span class="badge badge-info">{{ project.get_status_display|default:"" }}</span>
+    {% endif %}
+    <span class="text-muted small">Total de horas: {{ total_hours|default:0 }}</span>
   </div>
   <div class="card-body" style="padding-top: 0;">
     {% include "projects/project_base_tabs.html" with active_tab="horas" %}
@@ -194,5 +191,10 @@
   {% empty %}
     <div class="card"><div class="card-body text-muted">Nenhum apontamento para este projeto.</div></div>
   {% endfor %}
+</div>
+<div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+  <a href="{% url 'projects:project_list' %}" class="btn-back">
+    <i class="fas fa-arrow-left"></i> Voltar
+  </a>
 </div>
 {% endblock %}
