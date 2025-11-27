@@ -23,13 +23,38 @@ if not SECRET_KEY:
     else:
         raise ValueError("SECRET_KEY environment variable is required in production")
 
+# -----------------------------
+# HOSTS / CSRF CONFIG (AZURE)
+# -----------------------------
 allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '')
 if allowed_hosts_env:
-    ALLOWED_HOSTS = [host for host in allowed_hosts_env.split(',') if host]
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
 elif DEBUG:
     ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 else:
-    raise ValueError("ALLOWED_HOSTS environment variable is required in production")
+    # Em produção, se não tiver variável ALLOWED_HOSTS definida,
+    # vamos iniciar com lista vazia e complementar com o host do Azure (abaixo).
+    ALLOWED_HOSTS = []
+
+# Host automático do Azure App Service (WEBSITE_HOSTNAME)
+azure_hostname = os.getenv('WEBSITE_HOSTNAME') or os.getenv('AZURE_HOSTNAME')
+
+if azure_hostname and azure_hostname not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(azure_hostname)
+
+# CSRF_TRUSTED_ORIGINS
+csrf_trusted_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+
+if csrf_trusted_origins_env:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted_origins_env.split(',') if origin.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = []
+    if azure_hostname:
+        # Django exige HTTPS aqui, mesmo se o acesso for HTTP.
+        CSRF_TRUSTED_ORIGINS.extend([
+            f"https://{azure_hostname}",
+            f"http://{azure_hostname}",
+        ])
 
 # Application definition
 
@@ -202,7 +227,7 @@ UNFOLD = {
                     {
                         "title": "Projetos",
                         "icon": "work",
-                        "link": reverse_lazy("admin:projects_project_changelist"),
+                        'link': reverse_lazy("admin:projects_project_changelist"),
                     },
                     {
                         "title": "Tarefas",
@@ -318,4 +343,3 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [],
     "DEFAULT_AUTHENTICATION_CLASSES": [],
 }
-
