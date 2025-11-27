@@ -23,30 +23,18 @@ if not SECRET_KEY:
     else:
         raise ValueError("SECRET_KEY environment variable is required in production")
 
-# -----------------------------
-# HOSTS / CSRF CONFIG (AZURE)
-# -----------------------------
-allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '')
-if allowed_hosts_env:
-    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
-elif DEBUG:
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-else:
-    ALLOWED_HOSTS = []
+# ----------------------------------------------------
+# HOSTS / CSRF - configuração fixa para o Azure
+# ----------------------------------------------------
+ALLOWED_HOSTS = [
+    "sentinel360-gaa2dcgverg5awg5.spaincentral-01.azurewebsites.net",
+    ".azurewebsites.net",
+    "127.0.0.1",
+    "localhost",
+]
 
-# Domínio fixo do App Service
-AZURE_DOMAIN = "sentinel360-gaa2dcgverg5awg5.spaincentral-01.azurewebsites.net"
-
-# Garante que o host do Azure está sempre permitido
-if AZURE_DOMAIN not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(AZURE_DOMAIN)
-if ".azurewebsites.net" not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(".azurewebsites.net")
-
-# CSRF: precisa ter HTTP e HTTPS para este domínio
 CSRF_TRUSTED_ORIGINS = [
-    f"https://{AZURE_DOMAIN}",
-    f"http://{AZURE_DOMAIN}",
+    "https://sentinel360-gaa2dcgverg5awg5.spaincentral-01.azurewebsites.net",
 ]
 
 # Application definition
@@ -220,7 +208,7 @@ UNFOLD = {
                     {
                         "title": "Projetos",
                         "icon": "work",
-                        'link': reverse_lazy("admin:projects_project_changelist"),
+                        "link": reverse_lazy("admin:projects_project_changelist"),
                     },
                     {
                         "title": "Tarefas",
@@ -304,7 +292,6 @@ UNFOLD = {
         "show_history": True,
     },
 }
-
 
 LOGGING = {
     'version': 1,
