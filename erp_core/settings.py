@@ -27,15 +27,12 @@ if not SECRET_KEY:
 # HOSTS / CSRF - configuração fixa para o Azure
 # ----------------------------------------------------
 ALLOWED_HOSTS = [
-    "sentinel360-gaa2dcgverg5awg5.spaincentral-01.azurewebsites.net",
-    ".azurewebsites.net",
-    "127.0.0.1",
-    "localhost",
+    "*"
 ]
 
 # Mantive só por organização; com o CSRF desligado, não será usado.
 CSRF_TRUSTED_ORIGINS = [
-    "https://sentinel360-gaa2dcgverg5awg5.spaincentral-01.azurewebsites.net",
+    "*"
 ]
 
 # Application definition
