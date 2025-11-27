@@ -2,13 +2,53 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import TemplateView, ListView, CreateView
+from django.views.generic import TemplateView, FormView, ListView, CreateView
 from django.urls import reverse_lazy
 from django.db.models import Q
+from django import forms
+from django.contrib import messages
+from django.contrib.auth import get_user_model, update_session_auth_hash
 
 from apps.projects.models import Issue
-from django.contrib.auth import get_user_model
 from .forms import ExternalUserForm, InternalUserForm
+
+class ForcePasswordChangeView(LoginRequiredMixin, FormView):
+    template_name = 'core/force_password_change.html'
+    form_class = forms.Form
+
+    def get_form(self, form_class=None):
+        class PasswordForm(forms.Form):
+            new_password = forms.CharField(widget=forms.PasswordInput(), label="Nova senha")
+            confirm_password = forms.CharField(widget=forms.TextInput(), label="Confirmação")
+
+            def clean(self):
+                cleaned = super().clean()
+                pwd = cleaned.get('new_password')
+                confirm = cleaned.get('confirm_password')
+                if not pwd or not confirm:
+                    raise forms.ValidationError("Informe ambas as senhas.")
+                if pwd != confirm:
+                    raise forms.ValidationError("As senhas devem coincidir.")
+                return cleaned
+        return PasswordForm(**self.get_form_kwargs())
+
+    def dispatch(self, request, *args, **kwargs):
+        if not getattr(request.user, 'force_password_change', False):
+            return redirect('core:dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        user = self.request.user
+        user.set_password(form.cleaned_data['new_password'])
+        user.force_password_change = False
+        user.save()
+        update_session_auth_hash(self.request, user)
+        messages.success(self.request, "Senha atualizada.")
+        return redirect('core:dashboard')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['force_password_change'] = True
+        return context
 
 User = get_user_model()
 
@@ -19,6 +59,8 @@ class CustomLoginView(LoginView):
     
     def get_success_url(self):
         user = self.request.user
+        if getattr(user, 'force_password_change', False):
+            return reverse_lazy('core:force_password_change')
         if user.is_client():
             return reverse_lazy('core:portal_dashboard')
         return reverse_lazy('core:dashboard')

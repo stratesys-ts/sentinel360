@@ -7,7 +7,7 @@ django.setup()
 
 from django.contrib.auth import get_user_model
 from apps.timesheet.models import Timesheet, TimeEntry, Activity
-from apps.projects.models import Project, Task
+from apps.projects.models import Project
 from django.test import RequestFactory
 from apps.timesheet.views import TimesheetActionView
 

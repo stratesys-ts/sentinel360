@@ -11,6 +11,19 @@ class User(AbstractUser):
         COLLABORATOR = 'COLLABORATOR', _('Collaborator')
         CLIENT = 'CLIENT', _('Client')
 
+    employment_modality = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name=_('Modalidade de Contratação'),
+        help_text=_('Modalidade de contratação do usuário.')
+    )
+    codigo_tr = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name=_('Código TR'),
+        help_text=_('Identificador de TR vinculado ao recurso.')
+    )
+
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
@@ -36,6 +49,12 @@ class User(AbstractUser):
 
     def is_collaborator(self):
         return self.role == self.Role.COLLABORATOR
+
+    force_password_change = models.BooleanField(
+        default=False,
+        verbose_name=_('Forçar alteração de senha'),
+        help_text=_('Exigir atualização da senha no próximo login.')
+    )
 
     class Meta:
         verbose_name = _('User')
