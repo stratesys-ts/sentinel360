@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     "localhost",
 ]
 
+# Mantive só por organização; com o CSRF desligado, não será usado.
 CSRF_TRUSTED_ORIGINS = [
     "https://sentinel360-gaa2dcgverg5awg5.spaincentral-01.azurewebsites.net",
 ]
@@ -65,7 +66,8 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # CSRF desabilitado temporariamente
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
