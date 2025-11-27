@@ -30,28 +30,36 @@
         {{ form.non_field_errors }}
       </div>
     {% endif %}
+    {% if redirect_to %}
+      <input type="hidden" name="redirect_to" value="{{ redirect_to }}">
+    {% endif %}
     <div class="row g-3">
       <div class="col-md-12">
-        <label class="form-label fw-semibold">Titulo</label>
+        <label class="form-label fw-semibold">Título</label>
         {{ form.title }}
         {{ form.title.errors }}
       </div>
       <div class="col-md-12">
-        <label class="form-label fw-semibold">Descricao</label>
+        <label class="form-label fw-semibold">Descrição</label>
         {{ form.description }}
         {{ form.description.errors }}
       </div>
-      <div class="col-md-4">
-        <label class="form-label fw-semibold">Responsavel</label>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Responsável</label>
         {{ form.assigned_to }}
         {{ form.assigned_to.errors }}
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Colega de Trabalho</label>
+        {{ form.colleague }}
+        {{ form.colleague.errors }}
+      </div>
+      <div class="col-md-3">
         <label class="form-label fw-semibold">Prioridade</label>
         {{ form.priority }}
         {{ form.priority.errors }}
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <label class="form-label fw-semibold">Status</label>
         {{ form.status }}
         {{ form.status.errors }}
@@ -72,11 +80,13 @@
 </form>
 
 <div class="d-flex justify-content-end mt-3 gap-2">
-  {% if project %}
+  {% if redirect_to %}
+  <a class="btn btn-outline" href="{{ redirect_to }}">Cancelar</a>
+  {% elif project %}
   <a class="btn btn-outline" href="{% url 'projects:project_tasks' project.pk %}">Cancelar</a>
   {% else %}
   <a class="btn btn-outline" href="{% url 'projects:task_list_assigned' %}">Cancelar</a>
   {% endif %}
-  <button type="submit" form="taskEditForm" class="btn btn-primary">Salvar alteracoes</button>
+  <button type="submit" form="taskEditForm" class="btn btn-primary">Salvar alterações</button>
 </div>
 {% endblock %}

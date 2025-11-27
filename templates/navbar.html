@@ -35,16 +35,19 @@
           </a>
         </li>
 
-        <!-- Bell Icon -->
-        <li class="nav-item position-relative me-1">
-          <a href="{% url 'helpdesk:ticket_list' %}" class="nav-link p-1" title="Help Desk">
+        <!-- Alert Icon -->
+        <li class="nav-item me-1">
+          <button type="button" class="btn nav-link p-1 border-0 bg-transparent" title="ALERTA"
+                  data-bs-toggle="modal" data-bs-target="#alertModal" id="alertToggle">
             <i class="far fa-bell" style="font-size: 1rem;"></i>
+            {% if alert_notifications %}
             <span
               class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
               style="width: 8px; height: 8px;">
-              <span class="visually-hidden">New alerts</span>
+              <span class="visually-hidden">Novos alertas</span>
             </span>
-          </a>
+            {% endif %}
+          </button>
         </li>
 
         <!-- Refresh Icon -->
@@ -190,5 +193,59 @@
         window.location.reload();
       });
     }
+
+    const alertToggle = document.getElementById('alertToggle');
+    if (alertToggle) {
+      alertToggle.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar .nav-link.active').forEach(el => el.classList.remove('active'));
+      });
+    }
   });
 </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const alertModalEl = document.getElementById('alertModal');
+    const alertLinks = document.querySelectorAll('.alert-link');
+    if (!alertModalEl || !alertLinks.length) return;
+
+    const alertModal = new bootstrap.Modal(alertModalEl);
+    alertLinks.forEach(link => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        const href = link.getAttribute('href');
+        alertModal.hide();
+        window.location.href = href;
+      });
+    });
+  });
+</script>
+
+<!-- Alert Modal -->
+<div class="modal fade" id="alertModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-md">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title">ALERTA</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small mb-3">{{ alert_notifications|length }} itens críticos</p>
+        <div class="list-group">
+          {% if alert_notifications %}
+            {% for alert in alert_notifications %}
+            <a href="{{ alert.url }}" class="list-group-item list-group-item-action py-3 d-flex flex-column alert-link">
+              <div class="fw-bold">{{ alert.label }}</div>
+              <small class="text-muted">{{ alert.subtitle }}</small>
+            </a>
+            {% endfor %}
+          {% else %}
+            <div class="list-group-item text-center text-muted small py-3">
+              Sem alertas nesse momento.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

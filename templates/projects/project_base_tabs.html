@@ -3,6 +3,17 @@
   - project
   - active_tab (geral, tarefas, kanban, riscos, horas)
 {% endcomment %}
+<style>
+  .project-edit-icon {
+    color: #c62f2f;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+  }
+  .project-edit-icon:hover {
+    color: #8b1b1b;
+  }
+</style>
 <ul class="nav project-tabs" id="projectTabs">
   <li class="nav-item">
     <a class="nav-link {% if active_tab == 'geral' %}active{% endif %}" href="{% url 'projects:project_detail' project.pk %}">Geral</a>

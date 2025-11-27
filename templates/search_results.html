@@ -42,13 +42,9 @@
         <ul class="list-unstyled">
           {% for task in results.tasks %}
           <li class="mb-1">
-            {% if task.project_id %}
-              <a href="{% url 'projects:project_detail' task.project_id %}" class="text-decoration-none">
-                {{ task.title }}
-              </a>
-            {% else %}
+            <a href="{% url 'projects:task_edit' task.pk %}" class="text-decoration-none">
               {{ task.title }}
-            {% endif %}
+            </a>
             <small class="text-muted">({{ task.get_status_display }})</small>
           </li>
           {% endfor %}

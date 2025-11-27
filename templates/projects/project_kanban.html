@@ -47,7 +47,10 @@
 {% block content %}
 <div class="card" style="padding: 1.25rem 1.25rem 0 1.25rem;">
   <div class="card-header" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; border: none; background: transparent; padding: 0 0 1rem 0;">
-    <h3 style="margin: 0;">{{ project.name }}</h3>
+    <div style="display:flex; align-items:center; gap:0.35rem;">
+      <h3 style="margin: 0;">{{ project.name }}</h3>
+      {% include "projects/project_edit_icon.html" %}
+    </div>
     {% if project.status == 'IN_PROGRESS' %}
     <span class="status-badge status-in-progress">{{ project.get_status_display|default:"" }}</span>
     {% else %}

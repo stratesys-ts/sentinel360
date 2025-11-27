@@ -46,6 +46,18 @@ class ProjectUpdateView(LoginRequiredMixin, PermissionRequiredMixin, ProjectAcce
     def get_queryset(self):
         return self.get_project_queryset()
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['redirect_to'] = self.request.GET.get('redirect_to') or self.request.POST.get('redirect_to')
+        context['project'] = self.object
+        return context
+
+    def get_success_url(self):
+        redirect_to = self.request.POST.get('redirect_to') or self.request.GET.get('redirect_to')
+        if redirect_to:
+            return redirect_to
+        return reverse('core:dashboard')
+
 class ProjectDeleteView(LoginRequiredMixin, PermissionRequiredMixin, ProjectAccessMixin, DeleteView):
     model = Project
     template_name = 'projects/project_confirm_delete.html'
@@ -166,7 +178,7 @@ class IssueDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'issue'
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related('project', 'assigned_to')
+        qs = super().get_queryset().select_related('project', 'assigned_to', 'colleague')
         user = self.request.user
         if user.is_superuser or user.has_perm('projects.view_project'):
             return qs
@@ -180,7 +192,8 @@ class IssueDetailView(LoginRequiredMixin, DetailView):
             Q(project__team=user) |
             Q(project__project_manager=user) |
             Q(project__project_owner=user) |
-            Q(assigned_to=user)
+            Q(assigned_to=user) |
+            Q(colleague=user)
         )
 
 class IssueUpdateView(LoginRequiredMixin, UpdateView):
@@ -190,7 +203,7 @@ class IssueUpdateView(LoginRequiredMixin, UpdateView):
     context_object_name = 'task'
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related('project', 'assigned_to')
+        qs = super().get_queryset().select_related('project', 'assigned_to', 'colleague')
         user = self.request.user
         if user.is_superuser or user.has_perm('projects.change_project'):
             return qs
@@ -204,19 +217,24 @@ class IssueUpdateView(LoginRequiredMixin, UpdateView):
             Q(project__team=user) |
             Q(project__project_manager=user) |
             Q(project__project_owner=user) |
-            Q(assigned_to=user)
+            Q(assigned_to=user) |
+            Q(colleague=user)
         )
-
-    def get_success_url(self):
-        if self.object.project_id:
-            return reverse('projects:project_tasks', kwargs={'pk': self.object.project_id})
-        return reverse('projects:task_list_assigned')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['project'] = getattr(self.object, 'project', None)
         context['active_tab'] = 'tarefas'
+        context['redirect_to'] = self.request.GET.get('redirect_to') or self.request.POST.get('redirect_to')
         return context
+
+    def get_success_url(self):
+        redirect_to = self.request.POST.get('redirect_to') or self.request.GET.get('redirect_to')
+        if redirect_to:
+            return redirect_to
+        if self.object.project_id:
+            return reverse('projects:project_tasks', kwargs={'pk': self.object.project_id})
+        return reverse('projects:task_list_assigned')
 
 
 class ProjectTasksView(LoginRequiredMixin, ProjectAccessMixin, TemplateView):
@@ -382,7 +400,11 @@ class TaskAssignedListView(LoginRequiredMixin, ListView):
     context_object_name = 'tasks'
 
     def get_queryset(self):
-        return Issue.objects.filter(issue_type=Issue.IssueType.TASK, assigned_to=self.request.user).order_by('-due_date', 'title')
+        return Issue.objects.filter(
+            issue_type=Issue.IssueType.TASK
+        ).filter(
+            Q(assigned_to=self.request.user) | Q(colleague=self.request.user)
+        ).order_by('-due_date', 'title')
 
 
 class ProjectHoursView(LoginRequiredMixin, ProjectAccessMixin, ListView):

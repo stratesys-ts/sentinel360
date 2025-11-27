@@ -39,7 +39,7 @@
         {% for task in tasks %}
         <tr>
           <td style="width: 70px;">
-            <a href="{% url 'projects:task_detail' task.id %}" style="color: var(--primary-color); font-weight: 600;">#{{ task.public_id|default:task.id }}</a>
+            <a href="{% url 'projects:task_edit' task.id %}?redirect_to={{ request.path|urlencode }}" style="color: var(--primary-color); font-weight: 600;">#{{ task.public_id|default:task.id }}</a>
           </td>
           <td>{{ task.title }}</td>
           <td>{{ task.project.name|default:"-" }}</td>
@@ -64,7 +64,7 @@
           <td>{{ task.start_date|date:"d/m/Y"|default:"-" }}</td>
           <td>{{ task.due_date|date:"d/m/Y"|default:"-" }}</td>
           <td style="text-align:center;" class="text-nowrap">
-            <a href="{% url 'projects:task_detail' task.id %}" title="Detalhes"
+            <a href="{% url 'projects:task_edit' task.id %}?redirect_to={{ request.path|urlencode }}" title="Editar"
                style="color: var(--primary-color); margin-right:0.6rem; font-size:1.05rem;">
               <i class="fas fa-external-link-alt"></i>
             </a>

@@ -82,14 +82,14 @@ class Project(models.Model):
 
 class Issue(models.Model):
     class Status(models.TextChoices):
-        TODO = 'TODO', _('To Do')
-        DOING = 'DOING', _('Doing')
-        DONE = 'DONE', _('Done')
+        TODO = 'TODO', _('A Fazer')
+        DOING = 'DOING', _('Em Andamento')
+        DONE = 'DONE', _('Concluída')
 
     class Priority(models.TextChoices):
-        LOW = 'LOW', _('Low')
-        MEDIUM = 'MEDIUM', _('Medium')
-        HIGH = 'HIGH', _('High')
+        LOW = 'LOW', _('Baixa')
+        MEDIUM = 'MEDIUM', _('Média')
+        HIGH = 'HIGH', _('Alta')
 
     class IssueType(models.TextChoices):
         HELP_DESK = 'Help Desk', _('Help Desk')
@@ -100,6 +100,7 @@ class Issue(models.Model):
     description = models.TextField(blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_issues')
     assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_issues')
+    colleague = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='colleague_issues', verbose_name=_("Colega de Trabalho"))
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.TODO)
     priority = models.CharField(max_length=20, choices=Priority.choices, default=Priority.MEDIUM)
     start_date = models.DateField(null=True, blank=True)
