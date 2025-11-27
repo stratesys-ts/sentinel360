@@ -32,29 +32,22 @@ if allowed_hosts_env:
 elif DEBUG:
     ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 else:
-    # Em produção, se não tiver variável ALLOWED_HOSTS definida,
-    # vamos iniciar com lista vazia e complementar com o host do Azure (abaixo).
     ALLOWED_HOSTS = []
 
-# Host automático do Azure App Service (WEBSITE_HOSTNAME)
-azure_hostname = os.getenv('WEBSITE_HOSTNAME') or os.getenv('AZURE_HOSTNAME')
+# Domínio fixo do App Service
+AZURE_DOMAIN = "sentinel360-gaa2dcgverg5awg5.spaincentral-01.azurewebsites.net"
 
-if azure_hostname and azure_hostname not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(azure_hostname)
+# Garante que o host do Azure está sempre permitido
+if AZURE_DOMAIN not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(AZURE_DOMAIN)
+if ".azurewebsites.net" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(".azurewebsites.net")
 
-# CSRF_TRUSTED_ORIGINS
-csrf_trusted_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', '')
-
-if csrf_trusted_origins_env:
-    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted_origins_env.split(',') if origin.strip()]
-else:
-    CSRF_TRUSTED_ORIGINS = []
-    if azure_hostname:
-        # Django exige HTTPS aqui, mesmo se o acesso for HTTP.
-        CSRF_TRUSTED_ORIGINS.extend([
-            f"https://{azure_hostname}",
-            f"http://{azure_hostname}",
-        ])
+# CSRF: precisa ter HTTP e HTTPS para este domínio
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{AZURE_DOMAIN}",
+    f"http://{AZURE_DOMAIN}",
+]
 
 # Application definition
 
