@@ -1,0 +1,6 @@
+{% if perms.projects.change_project %}
+<a href="{% url 'projects:project_update' project.pk %}?redirect_to={{ request.get_full_path|urlencode }}"
+   title="Editar projeto" class="project-edit-icon" aria-label="Editar projeto">
+  <i class="fas fa-edit"></i>
+</a>
+{% endif %}

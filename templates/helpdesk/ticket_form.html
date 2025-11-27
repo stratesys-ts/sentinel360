@@ -8,13 +8,16 @@
     style="max-width: 1400px; width: 100%; margin: 0 auto; padding: 2rem 1.2rem 1.2rem 1.2rem; box-shadow: var(--shadow-md); border-radius: var(--radius-xl);">
     <form method="post" enctype="multipart/form-data" style="width:100%;">
         {% csrf_token %}
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 style="font-size:1.5rem;font-weight:700;color:var(--brand-blue);letter-spacing:-1px;">
-                Dados do Chamado</h2>
-            {% if object %}
-            <span class="text-muted small">Editar chamado #{{ object.id }}</span>
-            {% endif %}
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 style="font-size:1.5rem;font-weight:700;color:var(--brand-blue);letter-spacing:-1px;">
+            Dados do Chamado</h2>
+        {% if object %}
+        <span class="text-muted small">Editar chamado #{{ object.id }}</span>
+        {% endif %}
+    </div>
+    {% if redirect_to %}
+    <input type="hidden" name="redirect_to" value="{{ redirect_to }}">
+    {% endif %}
 
         <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:1.1rem;margin-bottom:0.7rem;align-items:end;">
             <div class="form-group">
@@ -54,8 +57,12 @@
         </div>
 
         <div style="display:flex;justify-content:flex-end;gap:0.7rem;margin-top:1.2rem;">
-            <a href="{% url 'helpdesk:ticket_list' %}" class="btn btn-outline">Cancelar</a>
-            <button type="submit" class="btn btn-primary">Abrir Chamado</button>
+            {% if redirect_to %}
+            <a href="{{ redirect_to }}" class="btn btn-outline">Cancelar</a>
+            {% else %}
+            <a href="{% url 'core:dashboard' %}" class="btn btn-outline">Cancelar</a>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">{% if object %}Salvar Chamado{% else %}Abrir Chamado{% endif %}</button>
         </div>
     </form>
 </div>

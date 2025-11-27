@@ -45,7 +45,7 @@ class ProjectForm(forms.ModelForm):
 class IssueForm(forms.ModelForm):
     class Meta:
         model = Issue
-        fields = ['title', 'description', 'assigned_to', 'status', 'priority', 'start_date', 'due_date', 'issue_type']
+        fields = ['title', 'description', 'assigned_to', 'colleague', 'status', 'priority', 'start_date', 'due_date', 'issue_type']
         widgets = {
             'start_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
             'due_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
@@ -79,4 +79,6 @@ class IssueForm(forms.ModelForm):
                 member_ids.add(project.project_manager_id)
             if project.project_owner_id:
                 member_ids.add(project.project_owner_id)
-            self.fields['assigned_to'].queryset = User.objects.filter(id__in=member_ids, is_active=True)
+            eligible_users = User.objects.filter(id__in=member_ids, is_active=True)
+            self.fields['assigned_to'].queryset = eligible_users
+            self.fields['colleague'].queryset = eligible_users

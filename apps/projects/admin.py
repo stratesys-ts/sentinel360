@@ -45,11 +45,11 @@ class ProjectAdmin(ModelAdmin):
 
 @admin.register(Issue)
 class IssueAdmin(ModelAdmin):
-    list_display = ('title', 'issue_type', 'project', 'assigned_to', 'status', 'priority', 'due_date')
-    list_filter = ('issue_type', 'status', 'priority', 'project', 'assigned_to')
-    search_fields = ('title', 'description', 'project__name', 'assigned_to__username')
-    autocomplete_fields = ('project', 'assigned_to', 'created_by')
-    list_select_related = ('project', 'assigned_to', 'created_by')
+    list_display = ('title', 'issue_type', 'project', 'assigned_to', 'colleague', 'status', 'priority', 'due_date')
+    list_filter = ('issue_type', 'status', 'priority', 'project', 'assigned_to', 'colleague')
+    search_fields = ('title', 'description', 'project__name', 'assigned_to__username', 'colleague__username')
+    autocomplete_fields = ('project', 'assigned_to', 'colleague', 'created_by')
+    list_select_related = ('project', 'assigned_to', 'colleague', 'created_by')
     date_hierarchy = 'due_date'
     ordering = ('-due_date', 'title')
     list_per_page = 50

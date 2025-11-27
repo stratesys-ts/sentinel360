@@ -79,6 +79,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'apps.core.context_processors.module_access',
+                'apps.core.context_processors.admin_last_update',
+                'apps.core.context_processors.alert_notifications',
             ],
         },
     },
