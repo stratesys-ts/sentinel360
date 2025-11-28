@@ -45,11 +45,12 @@ class ProjectForm(forms.ModelForm):
 class IssueForm(forms.ModelForm):
     class Meta:
         model = Issue
-        fields = ['title', 'description', 'assigned_to', 'colleague', 'status', 'priority', 'start_date', 'due_date', 'issue_type']
+        fields = ['title', 'description', 'assigned_to', 'colleagues', 'status', 'priority', 'start_date', 'due_date', 'issue_type']
         widgets = {
             'start_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
             'due_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
             'description': forms.Textarea(attrs={'rows': 3}),
+            'colleagues': forms.SelectMultiple(attrs={'size': 4}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -81,4 +82,4 @@ class IssueForm(forms.ModelForm):
                 member_ids.add(project.project_owner_id)
             eligible_users = User.objects.filter(id__in=member_ids, is_active=True)
             self.fields['assigned_to'].queryset = eligible_users
-            self.fields['colleague'].queryset = eligible_users
+            self.fields['colleagues'].queryset = eligible_users

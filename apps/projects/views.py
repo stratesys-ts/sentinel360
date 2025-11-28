@@ -178,7 +178,7 @@ class IssueDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'issue'
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related('project', 'assigned_to', 'colleague')
+        qs = super().get_queryset().select_related('project', 'assigned_to').prefetch_related('colleagues')
         user = self.request.user
         if user.is_superuser or user.has_perm('projects.view_project'):
             return qs
@@ -193,7 +193,7 @@ class IssueDetailView(LoginRequiredMixin, DetailView):
             Q(project__project_manager=user) |
             Q(project__project_owner=user) |
             Q(assigned_to=user) |
-            Q(colleague=user)
+            Q(colleagues=user)
         ).distinct()
 
 class IssueUpdateView(LoginRequiredMixin, UpdateView):
@@ -203,7 +203,7 @@ class IssueUpdateView(LoginRequiredMixin, UpdateView):
     context_object_name = 'task'
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related('project', 'assigned_to', 'colleague')
+        qs = super().get_queryset().select_related('project', 'assigned_to').prefetch_related('colleagues')
         user = self.request.user
         if user.is_superuser or user.has_perm('projects.change_project'):
             return qs
@@ -218,7 +218,7 @@ class IssueUpdateView(LoginRequiredMixin, UpdateView):
             Q(project__project_manager=user) |
             Q(project__project_owner=user) |
             Q(assigned_to=user) |
-            Q(colleague=user)
+            Q(colleagues=user)
         ).distinct()
 
     def get_context_data(self, **kwargs):
@@ -402,9 +402,9 @@ class TaskAssignedListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Issue.objects.filter(
             issue_type=Issue.IssueType.TASK
-        ).filter(
-            Q(assigned_to=self.request.user) | Q(colleague=self.request.user)
-        ).order_by('-due_date', 'title')
+        ).prefetch_related('colleagues').filter(
+            Q(assigned_to=self.request.user) | Q(colleagues=self.request.user)
+        ).order_by('-due_date', 'title').distinct()
 
 
 class ProjectHoursView(LoginRequiredMixin, ProjectAccessMixin, ListView):

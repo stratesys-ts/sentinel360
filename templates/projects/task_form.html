@@ -9,6 +9,7 @@
   .task-layout .card-body { padding: 1rem 1.1rem 0.9rem 1.1rem; }
   .task-layout h4 { color:#1f2937; }
 </style>
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -51,8 +52,8 @@
       </div>
       <div class="col-md-3">
         <label class="form-label fw-semibold">Colega de Trabalho</label>
-        {{ form.colleague }}
-        {{ form.colleague.errors }}
+        {{ form.colleagues }}
+        {{ form.colleagues.errors }}
       </div>
       <div class="col-md-3">
         <label class="form-label fw-semibold">Prioridade</label>
@@ -89,4 +90,20 @@
   {% endif %}
   <button type="submit" form="taskEditForm" class="btn btn-primary">Salvar alterações</button>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const select = document.querySelector("#{{ form.colleagues.id_for_label }}");
+        if (!select) return;
+        new TomSelect(select, {
+            plugins: ['remove_button'],
+            create: false,
+            placeholder: 'Selecione os colegas...',
+            maxItems: null,
+        });
+    });
+</script>
 {% endblock %}
