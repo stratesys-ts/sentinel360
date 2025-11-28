@@ -19,7 +19,7 @@ class ForcePasswordChangeView(LoginRequiredMixin, FormView):
     def get_form(self, form_class=None):
         class PasswordForm(forms.Form):
             new_password = forms.CharField(widget=forms.PasswordInput(), label="Nova senha")
-            confirm_password = forms.CharField(widget=forms.TextInput(), label="Confirmação")
+            confirm_password = forms.CharField(widget=forms.PasswordInput(), label="Confirmação")
 
             def clean(self):
                 cleaned = super().clean()

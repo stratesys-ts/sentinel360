@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth.views import LogoutView
+from django.views.generic import RedirectView
 from .views import (
     CustomLoginView,
     DashboardView,
@@ -27,7 +28,8 @@ urlpatterns = [
     path('configuracoes/', SettingsView.as_view(), name='settings'),
     path('search/', GlobalSearchView.as_view(), name='search'),
     path('portal/', portal_dashboard, name='portal_dashboard'),
-    path('forcar-troca/', ForcePasswordChangeView.as_view(), name='force_password_change'),
+    path('redefinir-senha/', ForcePasswordChangeView.as_view(), name='force_password_change'),
+    path('forcar-troca/', RedirectView.as_view(pattern_name='core:force_password_change', permanent=True)),
     path('users/internal/', InternalUserListView.as_view(), name='internal_user_list'),
     path('users/internal/add/', InternalUserCreateView.as_view(), name='internal_user_add'),
     path('users/external/', ExternalUserListView.as_view(), name='external_user_list'),

@@ -20,7 +20,7 @@ Sistema ERP com mÃ³dulos de Help Desk, Timesheet e Projetos.
 2. Virtualenv: `python -m venv .venv && .venv\Scripts\activate`
 3. DependÃªncias: `pip install -r requirements.txt`
 4. DB (Docker): `docker-compose up -d`
-5. MigraÃ§Ãµes: `python manage.py migrate`
+5. Migra??es: `python manage.py migrate` (a migra??o agora garante o superuser `admin/admin`, evitando falhas de login ap?s trocar de branch)
 6. Dados demo: `python create_fixtures.py`
 7. Rodar: `python manage.py runserver`
 8. Acesso: http://127.0.0.1:8000 (admin/admin, manager/manager, collab/collab, client/client)
