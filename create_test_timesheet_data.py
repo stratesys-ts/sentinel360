@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import timedelta
 from apps.timesheet.models import Timesheet, TimeEntry
-from apps.projects.models import Project, Issue
+from apps.projects.models import Project, Task
 
 User = get_user_model()
 
@@ -34,7 +34,7 @@ def create_test_data():
 
     # Usar projetos e tarefas existentes (pegar o primeiro se houver)
     project = Project.objects.first()
-    task = Issue.objects.filter(project=project).first() if project else None
+    task = Task.objects.filter(project=project).first() if project else None
 
     # Criar entradas de tempo para a folha
     for day in range(7):

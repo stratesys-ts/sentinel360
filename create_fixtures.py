@@ -7,8 +7,8 @@ django.setup()
 
 from django.contrib.auth import get_user_model
 from apps.helpdesk.models import Category, Ticket
-from apps.projects.models import Project, Issue
-from apps.timesheet.models import Timesheet, TimeEntry
+from apps.projects.models import Project, Task
+from apps.timesheet.models import TimeEntry
 
 User = get_user_model()
 
@@ -77,51 +77,30 @@ def create_demo_data():
     )
     proj.team.add(manager, collab)
 
-    Issue.objects.get_or_create(
+    Task.objects.get_or_create(
         title='Design da Home',
         project=proj,
-        defaults={
-            'assigned_to': collab,
-            'status': Issue.Status.DONE,
-            'priority': Issue.Priority.HIGH,
-            'due_date': date.today() + timedelta(days=5),
-            'issue_type': Issue.IssueType.TASK,
-            'created_by': manager,
-        }
+        defaults={'assigned_to': collab, 'status': 'DONE', 'priority': 'HIGH', 'due_date': date.today() + timedelta(days=5)}
     )
     
-    Issue.objects.get_or_create(
+    Task.objects.get_or_create(
         title='Desenvolvimento Frontend',
         project=proj,
-        defaults={
-            'assigned_to': collab,
-            'status': Issue.Status.DOING,
-            'priority': Issue.Priority.MEDIUM,
-            'due_date': date.today() + timedelta(days=15),
-            'issue_type': Issue.IssueType.TASK,
-            'created_by': manager,
-        }
+        defaults={'assigned_to': collab, 'status': 'DOING', 'priority': 'MEDIUM', 'due_date': date.today() + timedelta(days=15)}
     )
 
     print("Project data created.")
 
     # Timesheet
-    week_start = date.today()
-    week_start -= timedelta(days=week_start.weekday())
-    timesheet, _ = Timesheet.objects.get_or_create(
-        user=collab,
-        start_date=week_start,
-        defaults={'end_date': week_start + timedelta(days=6)}
-    )
     TimeEntry.objects.get_or_create(
-        timesheet=timesheet,
-        project=proj,
+        user=collab,
         date=date.today(),
         start_time='09:00',
         defaults={
             'end_time': '18:00',
+            'pause_duration': timedelta(hours=1),
             'description': 'Trabalho no frontend do site.',
-            'hours': 8,
+            'is_approved': False
         }
     )
 
