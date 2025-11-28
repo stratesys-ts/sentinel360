@@ -67,6 +67,12 @@ class CustomUserAdmin(UserAdmin):
     list_select_related = ('client_project',)
     autocomplete_fields = ('client_project',)
 
+    class Media:
+        css = {
+            'all': ('css/admin_internaluser.css',)
+        }
+        js = ('js/admin_internaluser_password.js',)
+
 from .models import InternalUser, ExternalUser
 
 @admin.register(InternalUser)
@@ -194,6 +200,12 @@ class ExternalUserAdmin(UserAdmin):
     ordering = ('username',)
     list_select_related = ('client_project',)
     autocomplete_fields = ('client_project',)
+
+    class Media:
+        css = {
+            'all': ('css/admin_internaluser.css',)
+        }
+        js = ('js/admin_internaluser_password.js',)
 
     @admin.display(description="Excluir")
     def delete_link(self, obj):
