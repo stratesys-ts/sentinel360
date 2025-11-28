@@ -23,17 +23,13 @@ if not SECRET_KEY:
     else:
         raise ValueError("SECRET_KEY environment variable is required in production")
 
-# ----------------------------------------------------
-# HOSTS / CSRF - configuração fixa para o Azure
-# ----------------------------------------------------
-ALLOWED_HOSTS = [
-    "*"
-]
-
-# Mantive só por organização; com o CSRF desligado, não será usado.
-CSRF_TRUSTED_ORIGINS = [
-    "*"
-]
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '')
+if allowed_hosts_env:
+    ALLOWED_HOSTS = [host for host in allowed_hosts_env.split(',') if host]
+elif DEBUG:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+else:
+    raise ValueError("ALLOWED_HOSTS environment variable is required in production")
 
 # Application definition
 
@@ -63,8 +59,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # CSRF desabilitado temporariamente
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -292,6 +287,7 @@ UNFOLD = {
     },
 }
 
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -322,3 +318,4 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [],
     "DEFAULT_AUTHENTICATION_CLASSES": [],
 }
+

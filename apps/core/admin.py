@@ -1,19 +1,21 @@
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
-from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse, path
 from django.utils.html import format_html
 from django.template.response import TemplateResponse
+from django.contrib import messages
+import secrets
 
 from .models import GroupModuleAccess, User
+from .forms import InternalUserPasswordForm
 
 class CustomUserAdmin(UserAdmin):
     """Admin base para o modelo de usuário (não registrada para esconder o menu genérico)."""
     fieldsets = (
         (_('Credenciais'), {'fields': ('username', 'password')}),
-        (_('Informações pessoais'), {'fields': ('first_name', 'last_name', 'email')}),
+        (_('Informações pessoais'), {'fields': ('first_name', 'last_name', 'email', 'codigo_tr', 'employment_modality')}),
         (_('Papel e projeto'), {'fields': ('role', 'client_project')}),
         (
             _('Permissões'),
@@ -71,8 +73,8 @@ from .models import InternalUser, ExternalUser
 class InternalUserAdmin(UserAdmin):
     actions = ['delete_selected']
     fieldsets = (
-        (_('Credenciais'), {'fields': ('username', 'password')}),
-        (_('Informações pessoais'), {'fields': ('first_name', 'last_name', 'email')}),
+        (_('Credenciais'), {'fields': ('username', 'new_password', 'confirm_password', 'generate_password', 'force_password_change')}),
+        (_('Informações pessoais'), {'fields': ('first_name', 'last_name', 'email', 'codigo_tr', 'employment_modality')}),
         (_('Papel'), {'fields': ('role',)}),
         (
             _('Permissões'),
@@ -88,6 +90,7 @@ class InternalUserAdmin(UserAdmin):
         ),
         (_('Datas importantes'), {'fields': ('last_login', 'date_joined')}),
     )
+    form = InternalUserPasswordForm
     add_fieldsets = (
         (
             None,
@@ -111,6 +114,30 @@ class InternalUserAdmin(UserAdmin):
     list_filter = ('role', 'is_staff', 'is_active', 'groups')
     search_fields = ('username', 'first_name', 'last_name', 'email')
     ordering = ('username',)
+
+    class Media:
+        css = {
+            'all': ('css/admin_internaluser.css',)
+        }
+        js = ('js/admin_internaluser_password.js',)
+
+    def save_model(self, request, obj, form, change):
+        pwd = form.cleaned_data.get('new_password')
+        generate = form.cleaned_data.get('generate_password')
+        if generate:
+            pwd = secrets.token_urlsafe(12)
+            obj.set_password(pwd)
+            messages.info(request, _("Senha gerada automaticamente."))
+        elif pwd:
+            obj.set_password(pwd)
+        obj.force_password_change = form.cleaned_data.get('force_password_change') or False
+        super().save_model(request, obj, form, change)
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        formfield = super().formfield_for_dbfield(db_field, request, **kwargs)
+        if db_field.name in ('codigo_tr', 'employment_modality') and formfield:
+            formfield.help_text = ''
+        return formfield
 
     def get_queryset(self, request):
         return super().get_queryset(request).exclude(role=User.Role.CLIENT)

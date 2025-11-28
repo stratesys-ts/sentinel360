@@ -194,7 +194,7 @@ class IssueDetailView(LoginRequiredMixin, DetailView):
             Q(project__project_owner=user) |
             Q(assigned_to=user) |
             Q(colleague=user)
-        )
+        ).distinct()
 
 class IssueUpdateView(LoginRequiredMixin, UpdateView):
     model = Issue
@@ -219,7 +219,7 @@ class IssueUpdateView(LoginRequiredMixin, UpdateView):
             Q(project__project_owner=user) |
             Q(assigned_to=user) |
             Q(colleague=user)
-        )
+        ).distinct()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

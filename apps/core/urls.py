@@ -14,6 +14,7 @@ from .views import (
     ProfileView,
     SettingsView,
     GlobalSearchView,
+    ForcePasswordChangeView,
 )
 
 urlpatterns = [
@@ -26,6 +27,7 @@ urlpatterns = [
     path('configuracoes/', SettingsView.as_view(), name='settings'),
     path('search/', GlobalSearchView.as_view(), name='search'),
     path('portal/', portal_dashboard, name='portal_dashboard'),
+    path('forcar-troca/', ForcePasswordChangeView.as_view(), name='force_password_change'),
     path('users/internal/', InternalUserListView.as_view(), name='internal_user_list'),
     path('users/internal/add/', InternalUserCreateView.as_view(), name='internal_user_add'),
     path('users/external/', ExternalUserListView.as_view(), name='external_user_list'),
